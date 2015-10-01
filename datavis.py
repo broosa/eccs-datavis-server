@@ -1,6 +1,10 @@
 import psycopg2
 
-from flask import Flask, render_template
+import flask
+
+from psycopg2.extensions import AsIs
+
+from flask import Flask, render_template, request
 from werkzeug.routing import BaseConverter
 
 db_conn = None;
@@ -14,6 +18,15 @@ class RegexConverter(BaseConverter):
 
 app.url_map.converters['regex'] = RegexConverter
 
+#This function should eventually be replaced to avoid getting
+#more data than we actually need
+def psql_query(query, args=None):
+	cursor = db_conn.cursor()
+	if args is not None:
+		cursor.execute(query, args)
+	else:
+		curser.execute(query)
+	return cursor.fetchall()
 
 #@app.route('/api/<regex("[a-zA-Z0-9]+"):command>/<path:args>/')
 #def req_api(command, args):
@@ -22,15 +35,30 @@ app.url_map.converters['regex'] = RegexConverter
 
 @app.route('/api/datasets/')
 def api_list_datasets():
-	pass
+	datasets = psql_query("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname='public';")
+	return flask.jsonify(datasets=[item[0] for item in datasets])
 
-@app.route('/api/<regex("[a-zA-Z0-9]+"):dataset_name>/columns/')
-def api_list_variables(dataset_name):
-	pass
+@app.route('/api/<regex("[a-zA-Z0-9_]+"):dataset_name>/columns/')
+def api_list_columns(dataset_name):
+	columns = psql_query("SELECT column_name FROM information_schema.columns WHERE table_name=%s;", (dataset_name,))
+	#We don't want to return a list of lists in json; we only want the elements in each list. Hence, we unpack
+	#Each row so that each is a single litem in the JSON array
+	return flask.jsonify(dataset=dataset_name, columns=[col_name[0] for col_name in columns])
 
-@app.route('/api/<regex("[a-zA-Z0-9]+"):data_set_name>/<regex("[a-zA-Z0-9]+"):column_name>')
-def api_get_column(dataset_name, column_name):
-	pass
+@app.route('/api/<regex("[a-zA-Z0-9_]+"):dataset_name>/<regex("[a-zA-Z0-9_+]+"):column_names>/')
+def api_get_column(dataset_name, column_names):
+	data = None
+
+	columns = str(", ".join(column_names.split("+")))
+	if request.args.get("count"):
+
+		record_count = int(request.args.get("count"))
+		data = psql_query("SELECT %s FROM %s LIMIT %s;", (AsIs(columns), AsIs(dataset_name), record_count))		
+
+	else:
+		data = psql_query("SELECT %s FROM %s;", (AsIs(columns), AsIs(dataset_name)))
+	
+	return flask.jsonify(dataset=dataset_name, data=data)
 
 #Start the testing server
 if __name__ == "__main__":
