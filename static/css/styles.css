@@ -1,0 +1,36 @@
+body {
+    font-family: "Open Sans";
+    padding-top: 70px;
+    background: #E0E0E0;
+}
+
+.content-wrapper {
+    padding: 30px;
+    background-color: #FFFFFF;
+}
+
+.center-block {
+    float: none;
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+	box-shadow: 2px 5px 10px rgba(0, 0, 0, .175);
+}
+
+.report-row-dark {
+    background-color: #bbbbbb;
+}
+
+.report-row-light {
+    background-color: #dddddd;
+}
+
+.error-container {
+    color: #ff0000;
+}
+
+.map-container {
+	/*width: 800px;*/
+	height: 600px;
+	box-shadow: 2px 5px 10px rgba(0, 0, 0, .175);
+}
