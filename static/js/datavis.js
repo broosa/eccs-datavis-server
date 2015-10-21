@@ -10,16 +10,20 @@ var mapInit = function() {
 	dataMap = new google.maps.Map(document.getElementById("map-viewport"), mapProps);
 };
 
+var populateDropdown = function(element, data) {
+    $.each(data, function(index, value) {
+        option = $("<option></option>").attr("value", value).text(value);
+        element.append(option);
+        element.trigger("chosen:updated", true)
+    });
+};
+
 var dropdownInit = function() {
     $.ajax({
         url: "api/datasets/",
         success: function(data) {
             console.log("Populating dropdowns...");
-            $.each(data.datasets, function(index, value) {
-                option = $("<option></option>").attr("value", value).text(value);
-                $("#dropdown-dataset").append(option);
-                $("#dropdown-dataset").trigger("chosen:updated", true);
-            });
+            populateDropdown($("#dropdown-dataset"), data);
         }
     });
 };
@@ -29,6 +33,17 @@ var onDatasetChanged = function() {
     chosenElement = $("#dropdown-dataset").chosen()
     if (chosenElement.val() != "") {
         $("#dropdown-date").removeAttr("disabled");
+        $("#dropdown-date").trigger("chosen:updated", true);
+        
+        datasetName = chosenElement.val();
+        ajaxURL = "api/" + datasetName + "/dates/";
+        $.ajax({
+            url: ajaxURL,
+            success: function(data) {
+                console.log("Populating date dropdown");
+                populateDropdown($("#dropdown-date"), data.dates);
+            }
+        });
     }
 };
 
