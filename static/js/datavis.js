@@ -3,7 +3,7 @@ var dataMap;
 var mapInit = function() {
 	
 	var mapProps = {
-		center: new google.maps.LatLng(65.000, -13.000),
+		center: new google.maps.LatLng(64.810, -18.245),
 		zoom: 6,
 		mapTypeId:google.maps.MapTypeId.ROADMAP
 	};
