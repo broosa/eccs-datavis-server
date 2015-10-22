@@ -56,7 +56,7 @@ def api_list_places(dataset_name, date_string):
 @app.route('/api/<regex("[a-zA-Z0-9_]+"):dataset_name>/<regex("\d{4}-\d{2}-\d{2}"):date_string>/<regex("[a-zA-Z0-9_]+"):place_name>/sample-types/')
 def api_list_sample_types(dataset_name, date_string, place_name):
     s_types = psql_query("SELECT DISTINCT ON (sensor) sensor FROM %s WHERE date(tstamp) = (DATE %s) AND site=%s", (AsIs(dataset_name), date_string, place_name))
-    return flask.jsonify(dataset=dataset_name, date=date_string, place=place_string, sample_type=[s_type[0] for s_type in s_types])
+    return flask.jsonify(dataset=dataset_name, date=date_string, place=place_name, sampleTypes=[s_type[0] for s_type in s_types])
       
 @app.route('/api/<regex("[a-zA-Z0-9_]+"):dataset_name>/<regex("\d{4}-\d{2}-\d{2}"):date_string>/<regex("[a-zA-Z0-9_]+"):place_name>/<regex("[a-zA-Z0-9_]+"):sample_type>/')
 def api_list_data(dataset_name, date_string, place_name, sample_type):
