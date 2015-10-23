@@ -2,12 +2,12 @@
 <html>
 	<head>
 		<meta charset="utf-8"/>
-		<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans" />
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/chosen.css') }}"/>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}"/>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-theme.min.css') }}"/>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/chosen.bootstrap.min.css') }}"/>		
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}"/>
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/fonts.css') }}" />
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/chosen.css') }}"/>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}"/>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap-theme.min.css') }}"/>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/chosen.bootstrap.min.css') }}"/>		
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}"/>
         <script src="{{ url_for('static', filename='js/jquery-2.1.4.js') }}"></script>
         <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
 		<script src="{{ url_for('static', filename='js/chosen.jquery.js') }}"></script>
@@ -18,15 +18,7 @@
 	<body>
         <div class="container">
             <div class="center-block content-wrapper">
-				<div id="map-viewport" class="map-container">
-				</div>
-				<!--<div class="clearfix" style="width: 100%; margin-top: 15px">
-					<div class="col-md-3">Dataset</div>
-					<div class="col-md-3">Day</div>
-					<div class="col-md-3">Place</div>
-					<div class="col-md-3">Sample Type</div>
-				</div> -->
-				<div class="clearfix" style="width: 100%; padding-top: 15px">
+                <div class="clearfix" style="width: 100%; padding-top: 15px">
 					<div class="col-md-3">
 						<div class="form-group">
 							<label for="dropdown-dataset">Dataset</label><br>
@@ -60,6 +52,14 @@
 						</div>
 					</div>	
 				</div>
+				<div id="map-viewport" class="map-container">
+				</div>
+				<!--<div class="clearfix" style="width: 100%; margin-top: 15px">
+					<div class="col-md-3">Dataset</div>
+					<div class="col-md-3">Day</div>
+					<div class="col-md-3">Place</div>
+					<div class="col-md-3">Sample Type</div>
+				</div> -->
             </div>
         </div>
 		<script type="text/javascript">mapInit();</script>
