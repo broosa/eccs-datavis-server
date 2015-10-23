@@ -20,13 +20,17 @@ app.url_map.converters['regex'] = RegexConverter
 
 #This function should eventually be replaced to avoid getting
 #more data than we actually need
-def psql_query(query, args=None):
+def psql_query(query, args=None, include_columns=False):
     cursor = db_conn.cursor()
     if args is not None:
         cursor.execute(query, args)
     else:
         cursor.execute(query)
-    return cursor.fetchall()
+
+    if include_columns:
+        return ([desc[0] for desc in cusor.description], cursor.fetchall())
+    else:   
+        return cursor.fetchall()
 
 #@app.route('/api/<regex("[a-zA-Z0-9]+"):command>/<path:args>/')
 #def req_api(command, args):

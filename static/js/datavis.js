@@ -1,24 +1,31 @@
 var dataMap;
+var markers = [];
 
 var mapInit = function() {
 	
 	var mapProps = {
 		center: new google.maps.LatLng(64.810, -18.245),
 		zoom: 6,
-		mapTypeId:google.maps.MapTypeId.ROADMAP
+		mapTypeId:google.maps.MapTypeId.TERRAIN
 	};
 	dataMap = new google.maps.Map(document.getElementById("map-viewport"), mapProps);
+};
+
+var mapClearMarkers = function() {
+    while (markers.length > 0) {
+        markers.pop().setMap(null);
+    }
 };
 
 var resetDropdown = function(element) {
 	element.val(element.children("option:first").val());
 	element.children("option").not("[value='']").remove();
 	element.trigger("chosen:updated", true);
-}
+};
 
 var enableDropdown = function(element) {
 	element.prop("disabled", false);
-	element.trigger("chosen:udpated", true);
+	element.trigger("chosen:updated", true);
 };
 
 var disableDropdown = function(element) {
@@ -124,7 +131,34 @@ var onPlaceChanged = function() {
 };
 
 var onSampleTypeChanged = function() {
-
+    chosenElement = $("#dropdown-sample-type").chosen();
+    if  (chosenElement.val() != "") {
+        datasetName = $("#dropdown-dataset").chosen().val();
+		date = $("#dropdown-date").chosen().val();
+        place = $("#dropdown-place").chosen().val();
+        sampleType = chosenElement.val();
+        ajaxURL = ["api", datasetName, date, place, sampleType].join("/") + "/";
+        
+        console.log("Populating map!");
+        $.ajax({
+            url: ajaxURL,
+            success: function(data) {
+                $.each(data.data, function(index, value) {
+                    pointLoc = new google.maps.LatLng(value[10], value[9]);    
+                    //console.log(value);
+                    //console.log(pointLoc);
+                    var marker = new google.maps.Marker({
+                        position: pointLoc,
+                        map: dataMap,
+                        title: "Data Point",
+                        icon: "https://maps.gstatic.com/intl/en_us/mapfiles/markers2/measle_blue.png" 
+  
+                    });
+                    markers.push(marker);
+                });
+            }
+        });
+    }
 };
 
 $(document).ready(function () {
