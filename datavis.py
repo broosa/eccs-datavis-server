@@ -11,6 +11,8 @@ db_conn = None;
 
 app = Flask(__name__)
 
+#app.config['DEBUG'] = False
+
 class RegexConverter(BaseConverter):
     def __init__(self, url_map, *items):
         super(RegexConverter, self).__init__(url_map)
