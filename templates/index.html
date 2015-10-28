@@ -18,9 +18,9 @@
 	<body>
         <div class="container">
             <div class="center-block content-wrapper">
-                <div class="clearfix" style="width: 100%; padding-top: 15px">
-					<div class="col-md-3">
-						<div class="form-group">
+                <div class="clearfix" style="width: 100%">
+					<div class="col-md-3" style="padding-left: 0px">
+						<div class="form-group"> 
 							<label for="dropdown-dataset">Dataset</label><br>
 							<select class="chosen-select" id="dropdown-dataset" style="width: 100%">
 								<option value="" disabled selected>Choose One</option>
@@ -43,7 +43,7 @@
 							</select>
 						</div>
 					</div>
-					<div class="col-md-3">
+					<div class="col-md-3" style="padding-right: 0px">
 						<div class="form-group">
 							<label for="dropdown-sample-type">Sample Type</label><br>
 							<select class="chosen-select" id="dropdown-sample-type" style="width: 100%" disabled>
@@ -52,8 +52,11 @@
 						</div>
 					</div>	
 				</div>
-				<div id="map-viewport" class="map-container">
+			    <div id="map-viewport" class="map-container">
 				</div>
+                <div class="clearfix" style="padding-top: 30px">
+                    <a class="btn btn-primary pull-right disabled" id="btn-csv-download" href="#">Download CSV</a>
+                </div>
 				<!--<div class="clearfix" style="width: 100%; margin-top: 15px">
 					<div class="col-md-3">Dataset</div>
 					<div class="col-md-3">Day</div>

@@ -4,7 +4,7 @@ import flask
 
 from psycopg2.extensions import AsIs
 
-from flask import Flask, render_template, request, url_for
+from flask import Flask, Response, render_template, request, url_for
 from werkzeug.routing import BaseConverter
 
 db_conn = None;
@@ -67,8 +67,38 @@ def api_list_sample_types(dataset_name, date_string, place_name):
 @app.route('/api/<regex("[a-zA-Z0-9_]+"):dataset_name>/<regex("\d{4}-\d{2}-\d{2}"):date_string>/<regex("[a-zA-Z0-9_]+"):place_name>/<regex("[a-zA-Z0-9_]+"):sample_type>/')
 def api_list_data(dataset_name, date_string, place_name, sample_type):
     
+    is_csv = False
+
+    try:
+        data_format = request.args.get("fmt")
+        
+        if data_format == "csv":
+            is_csv = True
+    except KeyError:
+        pass
+
     data = psql_query("SELECT * FROM field_data WHERE dataset=%s AND date(tstamp)=(DATE %s) AND site=%s AND sensor=%s", (dataset_name, date_string, place_name, sample_type))
-    return flask.jsonify(dataset=dataset_name, date=date_string, place=place_name, sample_type=sample_type, data=data)
+    if is_csv:
+        cursor = db_conn.cursor()
+        cursor.execute("SELECT * FROM field_data LIMIT 0")
+
+        column_names = [desc[0] for desc in cursor.description]
+    
+        #In case the requested csv is huge, return it bit by bit
+        def stream_csv():
+            yield ",".join(column_names) + "\n"
+            for row in data:
+                print(row)
+                yield ",".join([str(item) if item is not None else "" for item in row]) + "\n"
+
+        csv_response = Response(stream_csv(), mimetype="text/csv")
+        #Set the file's download name
+        csv_response.headers["Content-Disposition"] = 'inline; filename="data.csv"'
+
+        return csv_response
+        
+    else:
+        return flask.jsonify(dataset=dataset_name, date=date_string, place=place_name, sample_type=sample_type, data=data)
       
 
 #Start the testing server
