@@ -7,6 +7,8 @@ from psycopg2.extensions import AsIs
 from flask import Flask, Response, render_template, request, url_for
 from werkzeug.routing import BaseConverter
 
+from configparser import SafeConfigParser
+
 db_conn = None;
 
 app = Flask(__name__)
@@ -104,11 +106,16 @@ def api_list_data(dataset_name, date_string, place_name, sample_type):
 #Start the testing server
 if __name__ == "__main__":
 
+    config = SafeConfigParser({"debug": False})
+    config.read("server.conf")
+	
+    host = config.get("database", "host")
+    db = config.get("database", "db")
+    username = config.get("database", "user")
+    password = config.get("database", "password")
+
     global db_conn;
     
-    app.logger.info("Loading auth info...")
-    with open("auth.txt", "r") as auth_file:
-        host, db, username, password = [line.strip() for line in auth_file]
     app.logger.info("Connecting to postgres...")
     db_conn = psycopg2.connect(host=host, database=db, user=username, password=password)
 
