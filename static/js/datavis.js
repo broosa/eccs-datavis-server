@@ -144,7 +144,7 @@ var onSampleTypeChanged = function() {
             url: ajaxURL,
             success: function(data) {
                 $.each(data.data, function(index, value) {
-                    pointLoc = new google.maps.LatLng(value[9], value[10]);    
+                    pointLoc = new google.maps.LatLng(value[10], value[11]);    
                     //console.log(value);
                     //console.log(pointLoc);
                     var marker = new google.maps.Marker({
