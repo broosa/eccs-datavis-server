@@ -11,6 +11,12 @@ var mapInit = function() {
 	dataMap = new google.maps.Map(document.getElementById("map-viewport"), mapProps);
 };
 
+var resetCSVButton = function() {
+    element = $("#btn-csv-download");
+    element.attr("href", "#");
+    element.addClass("disabled");
+};
+
 var mapClearMarkers = function() {
     while (markers.length > 0) {
         markers.pop().setMap(null);
@@ -37,7 +43,7 @@ var populateDropdown = function(element, data) {
     $.each(data, function(index, value) {
         option = $("<option></option>").attr("value", value).text(value);
         element.append(option);
-        element.trigger("chosen:updated", true)
+        element.trigger("chosen:updated", true);
     });
 };
 
@@ -57,6 +63,10 @@ var onDatasetChanged = function() {
     if (chosenElement.val() != "") {
         
         datasetName = chosenElement.val();
+
+        mapClearMarkers();
+        resetCSVButton();
+
         ajaxURL = ["api", datasetName, "dates/"].join("/");
 
         $.ajax({
@@ -87,6 +97,7 @@ var onDateChanged = function() {
 		datasetName = $("#dropdown-dataset").chosen().val();
 		date = chosenElement.val();
 		
+        mapClearMarkers();
 		ajaxURL = ["api", datasetName, date, "places/"].join("/");
 		$.ajax({
 			url: ajaxURL,
@@ -100,7 +111,6 @@ var onDateChanged = function() {
 			
 				disableDropdown($("#dropdown-sample-type"));
 				populateDropdown($("#dropdown-place"), data.places);
-				
 			}
 		});
 	}
@@ -115,7 +125,9 @@ var onPlaceChanged = function() {
 		place = chosenElement.val();
 		
 		ajaxURL = ["api", datasetName, date, place, "sample-types/"].join("/");
-
+        
+        mapClearMarkers();
+        resetCSVButton();
 		$.ajax({
 			url: ajaxURL,
 			success: function(data) {
@@ -140,11 +152,12 @@ var onSampleTypeChanged = function() {
         ajaxURL = ["api", datasetName, date, place, sampleType].join("/") + "/";
         
         console.log("Populating map!");
+        mapClearMarkers();
         $.ajax({
             url: ajaxURL,
             success: function(data) {
                 $.each(data.data, function(index, value) {
-                    pointLoc = new google.maps.LatLng(value[9], value[10]);    
+                    pointLoc = new google.maps.LatLng(value[10], value[11]);    
                     //console.log(value);
                     //console.log(pointLoc);
                     var marker = new google.maps.Marker({
@@ -156,6 +169,9 @@ var onSampleTypeChanged = function() {
                     });
                     markers.push(marker);
                 });
+
+                $("#btn-csv-download").removeClass("disabled");
+                $("#btn-csv-download").attr("href", ajaxURL + "?fmt=csv");
             }
         });
     }
