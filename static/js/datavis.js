@@ -6,7 +6,7 @@ var mapInit = function() {
 	var mapProps = {
 		center: new google.maps.LatLng(64.810, -18.245),
 		zoom: 6,
-		mapTypeId:google.maps.MapTypeId.SATELLITE
+		mapTypeId:google.maps.MapTypeId.TERRAIN	
 	};
 	dataMap = new google.maps.Map(document.getElementById("map-viewport"), mapProps);
 };
@@ -47,6 +47,14 @@ var populateDropdown = function(element, data) {
     });
 };
 
+var onStartFilterSelect = function() {
+    mapClearMarkers();
+    resetCSVButton();
+	$("#button-container").slideUp(200, function() {
+	    	$("#filter-container").slideDown();
+	});
+}
+
 var dropdownInit = function() {
     $.ajax({
         url: "api/datasets/",
@@ -63,10 +71,6 @@ var onDatasetChanged = function() {
     if (chosenElement.val() != "") {
         
         datasetName = chosenElement.val();
-
-        mapClearMarkers();
-        resetCSVButton();
-
         ajaxURL = ["api", datasetName, "dates/"].join("/");
 
         $.ajax({
@@ -96,8 +100,7 @@ var onDateChanged = function() {
 		
 		datasetName = $("#dropdown-dataset").chosen().val();
 		date = chosenElement.val();
-		
-        mapClearMarkers();
+
 		ajaxURL = ["api", datasetName, date, "places/"].join("/");
 		$.ajax({
 			url: ajaxURL,
@@ -126,8 +129,6 @@ var onPlaceChanged = function() {
 		
 		ajaxURL = ["api", datasetName, date, place, "sample-types/"].join("/");
         
-        mapClearMarkers();
-        resetCSVButton();
 		$.ajax({
 			url: ajaxURL,
 			success: function(data) {
@@ -142,13 +143,13 @@ var onPlaceChanged = function() {
 	}
 };
 
-var onSampleTypeChanged = function() {
-    chosenElement = $("#dropdown-sample-type").chosen();
+var onLoadData = function() {
     if  (chosenElement.val() != "") {
         datasetName = $("#dropdown-dataset").chosen().val();
 		date = $("#dropdown-date").chosen().val();
         place = $("#dropdown-place").chosen().val();
-        sampleType = chosenElement.val();
+        sampleType = $("#dropdown-sample-type").chosen().val();
+
         ajaxURL = ["api", datasetName, date, place, sampleType].join("/") + "/";
         
         console.log("Populating map!");
@@ -172,6 +173,9 @@ var onSampleTypeChanged = function() {
 
                 $("#btn-csv-download").removeClass("disabled");
                 $("#btn-csv-download").attr("href", ajaxURL + "?fmt=csv");
+                $("#filter-container").slideUp(200, function() {
+    				$("#button-container").slideDown();
+                });
             }
         });
     }
@@ -185,5 +189,6 @@ $(document).ready(function () {
     $("#dropdown-dataset").chosen().change(onDatasetChanged);
     $("#dropdown-date").chosen().change(onDateChanged);
     $("#dropdown-place").chosen().change(onPlaceChanged);
-    $("#dropdown-sample-type").chosen().change(onSampleTypeChanged);
+	$("#btn-show-filter-select").click(onStartFilterSelect);
+	$("#btn-load-data").click(onLoadData);
 });

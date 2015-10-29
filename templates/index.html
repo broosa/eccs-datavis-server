@@ -23,7 +23,7 @@
         <div class="control-panel-overlay">
             <div class="center-block content-wrapper">
                 <div style="width: 100%">
-					<div class="row">
+					<div class="row" id="filter-container" style="padding-bottom: 0px">
 						<div class="col-md-3 dropdown-container">
 							<div>
 								<label for="dropdown-dataset">Dataset</label><br>
@@ -56,10 +56,15 @@
 								</select>
 							</div>
 						</div>
-					</div>
-					<div class="row" style="padding: 0px 10px 10px 10px	">
+						<div class="row" style="padding: 10px">	
+							<button class="btn btn-primary pull-right" id="btn-load-data">Load Data</button>
+						</div>
+				    </div>
+					<div class="row" id="button-container" style="padding: 10px; display: none">
+						<button id="btn-show-filter-select" class="btn btn-default" style="margin-right: 10px">Select Filter</button>
 						<a id="btn-csv-download" class="btn btn-primary pull-right disabled" href="#">Download CSV</a>
-					</div>	
+					</div>
+					
 				</div>
             </div>
         </div>
