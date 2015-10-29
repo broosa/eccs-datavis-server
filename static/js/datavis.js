@@ -6,7 +6,7 @@ var mapInit = function() {
 	var mapProps = {
 		center: new google.maps.LatLng(64.810, -18.245),
 		zoom: 6,
-		mapTypeId:google.maps.MapTypeId.TERRAIN
+		mapTypeId:google.maps.MapTypeId.SATELLITE
 	};
 	dataMap = new google.maps.Map(document.getElementById("map-viewport"), mapProps);
 };

@@ -5,7 +5,6 @@
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/fonts.css') }}" />
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/chosen.css') }}"/>
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}"/>
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap-theme.min.css') }}"/>
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/chosen.bootstrap.min.css') }}"/>		
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}"/>
         <script src="{{ url_for('static', filename='js/jquery-2.1.4.js') }}"></script>
@@ -16,41 +15,39 @@
         <title>Data Visualizer</title>
 	</head>
 	<body>
-        <div class="container">
-            <div class="center-block content-wrapper">
-				<div id="map-viewport" class="map-container">
-				</div>
-            </div>
+        <div style="height: 100%; width: 100%; position: absolute">
+			<div id="map-viewport" class="map-container">
+			</div>
         </div>
         <footer class="footer control-panel-overlay">
             <div class="center-block content-wrapper">
-                <div class="clearfix" style="width: 100%; padding-top: 15px">
-					<div class="col-md-3">
-						<div class="form-group">
+                <div class="clearfix" style="width: 100%">
+					<div class="col-md-3 dropdown-container">
+						<div>
 							<label for="dropdown-dataset">Dataset</label><br>
 							<select class="chosen-select" id="dropdown-dataset" style="width: 100%">
 								<option value="" disabled selected>Choose One</option>
 							</select>
 						</div>
 					</div>
-					<div class="col-md-3">
-						<div class="form-group">
+					<div class="col-md-3 dropdown-container">
+						<div>
 							<label for="dropdown-date">Date</label><br>
 							<select class="chosen-select" id="dropdown-date" style="width: 100%" disabled>
 								<option value="" disabled selected>Choose One</option>
 							</select>
 						</div>
 					</div>
-					<div class="col-md-3">
-						<div class="form-group">
+					<div class="col-md-3 dropdown-container">
+						<div>
 							<label for="dropdown-place">Place</label><br>
 							<select class="chosen-select" id="dropdown-place" style="width: 100%" disabled>
 								<option value="" disabled selected>Choose One</option>
 							</select>
 						</div>
 					</div>
-					<div class="col-md-3" style="padding-right: 0px">
-						<div class="form-group">
+					<div class="col-md-3 dropdown-container">
+						<div>
 							<label for="dropdown-sample-type">Sample Type</label><br>
 							<select class="chosen-select" id="dropdown-sample-type" style="width: 100%" disabled>
 								<option value="" disabled selected>Choose One</option>

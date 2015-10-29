@@ -1,12 +1,33 @@
+html {
+    height: 100%;
+}
+
 body {
+    position: relative;
     font-family: "Open Sans";
-    padding-top: 70px;
     background: #E0E0E0;
+    height: 100%;
+}
+
+.footer {
+    width: 100%
 }
 
 .content-wrapper {
-    padding: 30px;
     background-color: #FFFFFF;
+    padding: 5px;
+}
+
+.chosen-container-single .chosen-single {
+    background: none;
+}
+
+.chosen-container-active.chosen-with-drop .chosen-single {
+    background: none;
+}
+
+.chosen-container .chosen-drop {
+    box-shadow: none;
 }
 
 .center-block {
@@ -14,15 +35,26 @@ body {
     width: 800px;
     margin-left: auto;
     margin-right: auto;
-	box-shadow: 2px 5px 10px rgba(0, 0, 0, .175);
+	box-shadow: 1px 3px 5px rgba(0, 0, 0, .3);
 }
 
-.report-row-dark {
-    background-color: #bbbbbb;
+.control-panel-overlay {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    pointer-events: none;
+    z-index: 1;
+    padding: 15px;
 }
 
-.report-row-light {
-    background-color: #dddddd;
+.control-panel-overlay > * {
+    opacity: 1.0;
+    pointer-events: all;
+    border-radius: 3px;
+}
+
+.dropdown-container {
+    padding: 10px;
 }
 
 .error-container {
@@ -31,6 +63,6 @@ body {
 
 .map-container {
 	/*width: 800px;*/
-	height: 600px;
-	box-shadow: 2px 5px 10px rgba(0, 0, 0, .175);
+    width: 100%;
+	height: 100%;
 }
