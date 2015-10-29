@@ -4,8 +4,9 @@
 		<meta charset="utf-8"/>
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/fonts.css') }}" />
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/chosen.css') }}"/>
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}"/>
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/chosen.bootstrap.min.css') }}"/>		
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.css') }}"/>
+        <!--<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap-theme.min.css') }}"/>-->
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/chosen.bootstrap.min.css') }}"/>
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}"/>
         <script src="{{ url_for('static', filename='js/jquery-2.1.4.js') }}"></script>
         <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
@@ -32,7 +33,7 @@
 					</div>
 					<div class="col-md-3 dropdown-container">
 						<div>
-							<label for="dropdown-date">Date</label><br>
+							<label for="chosen-single chosen-default">Date</label><br>
 							<select class="chosen-select" id="dropdown-date" style="width: 100%" disabled>
 								<option value="" disabled selected>Choose One</option>
 							</select>
