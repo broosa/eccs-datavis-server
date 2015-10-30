@@ -53,6 +53,7 @@ var onStartFilterSelect = function() {
 	$("#button-container").slideUp(200, function() {
 	    	$("#filter-container").slideDown();
 	});
+	$("#timeplot-container").animate({bottom: "-250px"}, 200);
 }
 
 var dropdownInit = function() {
@@ -144,7 +145,7 @@ var onPlaceChanged = function() {
 };
 
 var onLoadData = function() {
-    if  (chosenElement.val() != "") {
+    if  ($("#dropdown-sample-type").val() != "") {
         datasetName = $("#dropdown-dataset").chosen().val();
 		date = $("#dropdown-date").chosen().val();
         place = $("#dropdown-place").chosen().val();
@@ -176,6 +177,38 @@ var onLoadData = function() {
                 $("#filter-container").slideUp(200, function() {
     				$("#button-container").slideDown();
                 });
+
+				data_series = $.map(data.data, function(value, i) {
+					date = Date.parse(value[2]);
+					data_value = value[6];
+					return [[date, data_value]];				
+				});
+
+				datasets = [{
+					label: sampleType,
+					data: data_series,
+					color: "#0000BB",
+					lines: {
+						show: true
+					},
+					points: {
+						fillColor: "#FF0000",
+						//show: true
+					}
+				}];
+
+				options = {
+					canvas: true,
+					xaxes: [{
+						mode: "time"
+					}],
+					grid: {
+						margin: 20
+					}
+				}
+				
+				$.plot($("#timeplot-container"), datasets, options);
+				$("#timeplot-container").animate({bottom: "30px"}, 200);
             }
         });
     }
