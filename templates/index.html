@@ -13,6 +13,9 @@
 		<script src="{{ url_for('static', filename='js/chosen.jquery.js') }}"></script>
 		<script src="https://maps.google.com/maps/api/js"></script>
 		<script src="{{ url_for('static', filename='js/datavis.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.flot.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.flot.time.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.flot.axislabels.js') }}"></script>
         <title>Data Visualizer</title>
 	</head>
 	<body>
@@ -21,7 +24,7 @@
 			</div>
         </div>
         <div class="control-panel-overlay">
-            <div class="center-block content-wrapper">
+            <div class="content-wrapper with-shadow">
                 <div style="width: 100%">
 					<div class="row" id="filter-container" style="padding-bottom: 0px">
 						<div class="col-md-3 dropdown-container">
@@ -68,6 +71,8 @@
 				</div>
             </div>
         </div>
+		<div id="timeplot-container" class="bottom-timeplot-container with-shadow">
+		</div>
 		<script type="text/javascript">mapInit();</script>
     </body>
 </html>
