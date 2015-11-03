@@ -1,5 +1,6 @@
 var dataMap;
 var markers = [];
+var selected_marker = null;
 
 var mapInit = function() {
 	
@@ -178,10 +179,12 @@ var onLoadData = function() {
     				$("#button-container").slideDown();
                 });
 
+                //Select the date and data value from the dataset
+                //That's what needed for the map.
 				data_series = $.map(data.data, function(value, i) {
 					date = Date.parse(value[2]);
 					data_value = value[6];
-					return [[date, data_value]];				
+					return [[date, data_value, {point_index: i}]];				
 				});
 
 				datasets = [{
@@ -214,6 +217,21 @@ var onLoadData = function() {
     }
 };
 
+var onPlotHover = function(event, pos, item) {
+    point_index = item[2].point_index;
+
+    console.log("Selecting new marker");
+    hover_point = markers[point_index];
+    
+    if (selected_marker != null) {
+        selected_marker.icon = "https://maps.gstatic.com/intl/en_us/mapfiles/markers2/measle_blue.png";
+    }
+
+    hover_point.icon = "https://maps.gstatic.com/intl/en_us/mapfiles/markers2/measle.png";
+    selected_marker = hover_point;
+};
+    
+
 $(document).ready(function () {
 	console.log("Setting up comboboxes");
 	$(".chosen-select").chosen({disable_search_threshold: 10});
@@ -224,4 +242,5 @@ $(document).ready(function () {
     $("#dropdown-place").chosen().change(onPlaceChanged);
 	$("#btn-show-filter-select").click(onStartFilterSelect);
 	$("#btn-load-data").click(onLoadData);
+    $("#timeplot-container").bind("plothover", onPlotHover);
 });
