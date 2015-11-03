@@ -1,3 +1,7 @@
+A work in progress visualization tool for quickly analyzing geotagged
+environmental data. Created for Earlham College Computer Science
+field science group.
+
 The tool needs to be configured to access the databse correctly.
 The server config should be stored in server.conf with a format
 something like this:
