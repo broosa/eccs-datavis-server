@@ -196,7 +196,11 @@ var onLoadData = function() {
 					},
 					points: {
 						fillColor: "#FF0000",
-						//show: true
+						//We need the points for plothover to work
+						//we set the radius to 0 so they don't actually
+						//appear on screen.						
+						show: true,
+						radius: 0
 					}
 				}];
 
@@ -206,7 +210,9 @@ var onLoadData = function() {
 						mode: "time"
 					}],
 					grid: {
-						margin: 20
+						margin: 20,
+						clickable: true,
+						hoverable: true
 					}
 				}
 				
