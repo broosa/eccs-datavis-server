@@ -1,1 +1,12 @@
-This to have documentation later.
+The tool needs to be configured to access the databse correctly.
+The server config should be stored in server.conf with a format
+something like this:
+
+[system]
+debug = False
+
+[database]
+host = <db hostname>
+db = <db name>
+user = <db user>
+password = <db password>
