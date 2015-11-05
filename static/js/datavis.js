@@ -4,14 +4,17 @@ var selected_marker = null;
 
 var mapInit = function() {
 	
+	//Center the map on iceland	
 	var mapProps = {
 		center: new google.maps.LatLng(64.810, -18.245),
 		zoom: 6,
 		mapTypeId:google.maps.MapTypeId.TERRAIN	
 	};
+	//Instantiate the map
 	dataMap = new google.maps.Map(document.getElementById("map-viewport"), mapProps);
 };
 
+//Disables the download button (deprecated?)
 var resetCSVButton = function() {
     element = $("#btn-csv-download");
     element.attr("href", "#");
@@ -41,6 +44,7 @@ var disableDropdown = function(element) {
 };
 
 var populateDropdown = function(element, data) {
+	//For each item in the data, add an <option> element 
     $.each(data, function(index, value) {
         option = $("<option></option>").attr("value", value).text(value);
         element.append(option);
@@ -51,9 +55,12 @@ var populateDropdown = function(element, data) {
 var onStartFilterSelect = function() {
     mapClearMarkers();
     resetCSVButton();
+	//Hide the buttons
+	//Show the filter selector
 	$("#button-container").slideUp(200, function() {
 	    	$("#filter-container").slideDown();
 	});
+	//Hide the graph
 	$("#timeplot-container").animate({bottom: "-250px"}, 200);
 }
 
