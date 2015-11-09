@@ -6,11 +6,9 @@ var mapInit = function() {
 
     //Center the map on iceland
     var mapProps = {
-center:
-        new google.maps.LatLng(64.810, -18.245),
+        center: new google.maps.LatLng(64.810, -18.245),
         zoom: 6,
-mapTypeId:
-        google.maps.MapTypeId.TERRAIN
+        mapTypeId: google.maps.MapTypeId.TERRAIN
     };
     //Instantiate the map
     dataMap = new google.maps.Map(document.getElementById("map-viewport"), mapProps);
@@ -63,13 +61,15 @@ var onStartFilterSelect = function() {
         $("#filter-container").slideDown();
     });
     //Hide the graph
-$("#timeplot-container").animate({bottom: "-250px"}, 200);
+    $("#timeplot-container").animate({
+        bottom: "-250px"
+    }, 200);
 }
 
 var dropdownInit = function() {
     $.ajax({
-url: "api/datasets/",
-success: function(data) {
+        url: "api/datasets/",
+        success: function(data) {
             console.log("Populating dropdowns...");
             populateDropdown($("#dropdown-dataset"), data.datasets);
         }
@@ -85,8 +85,8 @@ var onDatasetChanged = function() {
         ajaxURL = ["api", datasetName, "dates/"].join("/");
 
         $.ajax({
-url: ajaxURL,
-success: function(data) {
+            url: ajaxURL,
+            success: function(data) {
                 console.log("Populating date dropdown");
 
                 enableDropdown($("#dropdown-date"));
@@ -114,8 +114,8 @@ var onDateChanged = function() {
 
         ajaxURL = ["api", datasetName, date, "places/"].join("/");
         $.ajax({
-url: ajaxURL,
-success: function(data) {
+            url: ajaxURL,
+            success: function(data) {
                 console.log("Populating place dropdown");
 
                 enableDropdown($("#dropdown-place"));
@@ -141,8 +141,8 @@ var onPlaceChanged = function() {
         ajaxURL = ["api", datasetName, date, place, "sample-types/"].join("/");
 
         $.ajax({
-url: ajaxURL,
-success: function(data) {
+            url: ajaxURL,
+            success: function(data) {
                 console.log("Populating place dropdown");
 
                 enableDropdown($("#dropdown-sample-type"));
@@ -155,7 +155,7 @@ success: function(data) {
 };
 
 var onLoadData = function() {
-    if  ($("#dropdown-sample-type").val() != "") {
+    if ($("#dropdown-sample-type").val() != "") {
         datasetName = $("#dropdown-dataset").chosen().val();
         date = $("#dropdown-date").chosen().val();
         place = $("#dropdown-place").chosen().val();
@@ -166,17 +166,17 @@ var onLoadData = function() {
         console.log("Populating map!");
         mapClearMarkers();
         $.ajax({
-url: ajaxURL,
-success: function(data) {
+            url: ajaxURL,
+            success: function(data) {
                 $.each(data.data, function(index, value) {
                     pointLoc = new google.maps.LatLng(value[10], value[11]);
                     //console.log(value);
                     //console.log(pointLoc);
                     var marker = new google.maps.Marker({
-position: pointLoc,
-map: dataMap,
-title: "Data Point",
-icon: "https://maps.gstatic.com/intl/en_us/mapfiles/markers2/measle_blue.png"
+                        position: pointLoc,
+                        map: dataMap,
+                        title: "Data Point",
+                        icon: "https://maps.gstatic.com/intl/en_us/mapfiles/markers2/measle_blue.png"
 
                     });
                     markers.push(marker);
@@ -193,40 +193,39 @@ icon: "https://maps.gstatic.com/intl/en_us/mapfiles/markers2/measle_blue.png"
                 data_series = $.map(data.data, function(value, i) {
                     date = Date.parse(value[2]);
                     data_value = value[6];
-return [[date, data_value, {point_index: i}]];
+                    return [
+                        [date, data_value, {
+                            point_index: i
+                        }]
+                    ];
                 });
 
-                datasets = [ {
-label: sampleType,
-data: data_series,
-color: "#0000BB",
-lines: {
-show: true
+                datasets = [{
+                    label: sampleType,
+                    data: data_series,
+                    color: "#0000BB",
+                    lines: {
+                        show: true
                     },
-points: {
-fillColor: "#FF0000",
+                    points: {
+                        fillColor: "#FF0000",
                         //We need the points for plothover to work
                         //we set the radius to 0 so they don't actually
                         //appear on screen.
-show: true,
+                        show: true,
                         radius: 0
                     }
                 }];
 
                 options = {
-canvas:
-                    true,
-xaxes:
-                    [{
-mode: "time"
+                    canvas: true,
+                    xaxes: [{
+                        mode: "time"
                     }],
-grid:
-                    {
+                    grid: {
                         margin: 20,
-clickable:
-                        true,
-hoverable:
-                        true,
+                        clickable: true,
+                        hoverable: true,
                         mouseActiveRadius: 200
                     }
                 }
@@ -234,7 +233,9 @@ hoverable:
                 console.log(data_series);
 
                 $.plot($("#timeplot-container"), datasets, options);
-$("#timeplot-container").animate({bottom: "30px"}, 200);
+                $("#timeplot-container").animate({
+                    bottom: "30px"
+                }, 200);
             }
         });
     }
@@ -266,9 +267,11 @@ var onPlotHover = function(event, pos, item) {
 };
 
 
-$(document).ready(function () {
+$(document).ready(function() {
     console.log("Setting up comboboxes");
-    $(".chosen-select").chosen({disable_search_threshold: 10});
+    $(".chosen-select").chosen({
+        disable_search_threshold: 10
+    });
 
     dropdownInit();
     $("#dropdown-dataset").chosen().change(onDatasetChanged);
