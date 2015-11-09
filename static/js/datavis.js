@@ -1,16 +1,20 @@
 var dataMap;
 var markers = [];
+var selected_marker = null;
 
 var mapInit = function() {
 	
+	//Center the map on iceland	
 	var mapProps = {
 		center: new google.maps.LatLng(64.810, -18.245),
 		zoom: 6,
 		mapTypeId:google.maps.MapTypeId.TERRAIN	
 	};
+	//Instantiate the map
 	dataMap = new google.maps.Map(document.getElementById("map-viewport"), mapProps);
 };
 
+//Disables the download button (deprecated?)
 var resetCSVButton = function() {
     element = $("#btn-csv-download");
     element.attr("href", "#");
@@ -40,6 +44,7 @@ var disableDropdown = function(element) {
 };
 
 var populateDropdown = function(element, data) {
+	//For each item in the data, add an <option> element 
     $.each(data, function(index, value) {
         option = $("<option></option>").attr("value", value).text(value);
         element.append(option);
@@ -50,9 +55,12 @@ var populateDropdown = function(element, data) {
 var onStartFilterSelect = function() {
     mapClearMarkers();
     resetCSVButton();
+	//Hide the buttons
+	//Show the filter selector
 	$("#button-container").slideUp(200, function() {
 	    	$("#filter-container").slideDown();
 	});
+	//Hide the graph
 	$("#timeplot-container").animate({bottom: "-250px"}, 200);
 }
 
@@ -178,10 +186,12 @@ var onLoadData = function() {
     				$("#button-container").slideDown();
                 });
 
+                //Select the date and data value from the dataset
+                //That's what needed for the map.
 				data_series = $.map(data.data, function(value, i) {
 					date = Date.parse(value[2]);
 					data_value = value[6];
-					return [[date, data_value]];				
+					return [[date, data_value, {point_index: i}]];				
 				});
 
 				datasets = [{
@@ -193,7 +203,11 @@ var onLoadData = function() {
 					},
 					points: {
 						fillColor: "#FF0000",
-						//show: true
+						//We need the points for plothover to work
+						//we set the radius to 0 so they don't actually
+						//appear on screen.						
+						show: true,
+						radius: 0
 					}
 				}];
 
@@ -203,9 +217,14 @@ var onLoadData = function() {
 						mode: "time"
 					}],
 					grid: {
-						margin: 20
+						margin: 20,
+						clickable: true,
+						hoverable: true,
+                        mouseActiveRadius: 200
 					}
 				}
+
+                console.log(data_series);
 				
 				$.plot($("#timeplot-container"), datasets, options);
 				$("#timeplot-container").animate({bottom: "30px"}, 200);
@@ -213,6 +232,32 @@ var onLoadData = function() {
         });
     }
 };
+
+var onPlotHover = function(event, pos, item) {
+    if (item != null) {
+        //console.log(item);
+        point_index = item.dataIndex;
+
+        console.log("Selecting new marker");
+        hover_point = markers[point_index];
+        
+        if (selected_marker != hover_point) {
+            hover_point.setIcon("http://maps.google.com/mapfiles/ms/icons/red-dot.png");
+        }
+
+        if (selected_marker != null && selected_marker != hover_point) {
+            selected_marker.setIcon("https://maps.gstatic.com/intl/en_us/mapfiles/markers2/measle_blue.png");
+            selected_marker.setZIndex(0);
+        }
+
+        selected_marker = hover_point;
+        selected_marker.setMap(dataMap);
+
+        selected_marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+
+    }
+};
+    
 
 $(document).ready(function () {
 	console.log("Setting up comboboxes");
@@ -224,4 +269,5 @@ $(document).ready(function () {
     $("#dropdown-place").chosen().change(onPlaceChanged);
 	$("#btn-show-filter-select").click(onStartFilterSelect);
 	$("#btn-load-data").click(onLoadData);
+    $("#timeplot-container").bind("plothover", onPlotHover);
 });

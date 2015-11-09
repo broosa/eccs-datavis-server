@@ -1,1 +1,16 @@
-This to have documentation later.
+A work in progress visualization tool for quickly analyzing geotagged
+environmental data. Created for Earlham College Computer Science
+field science group.
+
+The tool needs to be configured to access the databse correctly.
+The server config should be stored in server.conf with a format
+something like this:
+
+[system]
+debug = False
+
+[database]
+host = <db hostname>
+db = <db name>
+user = <db user>
+password = <db password>
