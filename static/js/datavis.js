@@ -219,9 +219,12 @@ var onLoadData = function() {
 					grid: {
 						margin: 20,
 						clickable: true,
-						hoverable: true
+						hoverable: true,
+                        mouseActiveRadius: 200
 					}
 				}
+
+                console.log(data_series);
 				
 				$.plot($("#timeplot-container"), datasets, options);
 				$("#timeplot-container").animate({bottom: "30px"}, 200);
@@ -231,17 +234,28 @@ var onLoadData = function() {
 };
 
 var onPlotHover = function(event, pos, item) {
-    point_index = item[2].point_index;
+    if (item != null) {
+        //console.log(item);
+        point_index = item.dataIndex;
 
-    console.log("Selecting new marker");
-    hover_point = markers[point_index];
-    
-    if (selected_marker != null) {
-        selected_marker.icon = "https://maps.gstatic.com/intl/en_us/mapfiles/markers2/measle_blue.png";
+        console.log("Selecting new marker");
+        hover_point = markers[point_index];
+        
+        if (selected_marker != hover_point) {
+            hover_point.setIcon("http://maps.google.com/mapfiles/ms/icons/red-dot.png");
+        }
+
+        if (selected_marker != null && selected_marker != hover_point) {
+            selected_marker.setIcon("https://maps.gstatic.com/intl/en_us/mapfiles/markers2/measle_blue.png");
+            selected_marker.setZIndex(0);
+        }
+
+        selected_marker = hover_point;
+        selected_marker.setMap(dataMap);
+
+        selected_marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+
     }
-
-    hover_point.icon = "https://maps.gstatic.com/intl/en_us/mapfiles/markers2/measle.png";
-    selected_marker = hover_point;
 };
     
 
