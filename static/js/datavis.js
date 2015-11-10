@@ -168,11 +168,11 @@ var onLoadData = function() {
         $.ajax({
             url: ajaxURL,
             success: function(data) {
-				bounds = new google.maps.LatLngBounds();
-				//Create a map marker from each latitude/longitude pair
+                bounds = new google.maps.LatLngBounds();
+                //Create a map marker from each latitude/longitude pair
                 $.each(data.data, function(index, value) {
                     pointLoc = new google.maps.LatLng(value[10], value[11]);
-					bounds.extend(pointLoc);
+                    bounds.extend(pointLoc);
                     //console.log(value);
                     //console.log(pointLoc);
                     var marker = new google.maps.Marker({
@@ -185,8 +185,8 @@ var onLoadData = function() {
                     markers.push(marker);
                 });
 
-				//Set the map so that it fits all the points we've just gotten
-				dataMap.fitBounds(bounds);
+                //Set the map so that it fits all the points we've just gotten
+                dataMap.fitBounds(bounds);
 
                 $("#btn-csv-download").removeClass("disabled");
                 $("#btn-csv-download").attr("href", ajaxURL + "?fmt=csv");
