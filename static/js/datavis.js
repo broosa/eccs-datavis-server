@@ -68,21 +68,21 @@ var onStartFilterSelect = function() {
 
 var dropdownInit = function() {
     $.ajax({
-        url: "api/datasets/",
+        url: "api/trips/",
         success: function(data) {
             console.log("Populating dropdowns...");
-            populateDropdown($("#dropdown-dataset"), data.datasets);
+            populateDropdown($("#dropdown-trip"), data.trips);
         }
     });
 };
 
-var onDatasetChanged = function() {
+var onTripChanged = function() {
     console.log("Handling dropdown change event...");
-    chosenElement = $("#dropdown-dataset").chosen()
+    chosenElement = $("#dropdown-trip").chosen()
     if (chosenElement.val() != "") {
 
-        datasetName = chosenElement.val();
-        ajaxURL = ["api", datasetName, "dates/"].join("/");
+        tripName = chosenElement.val();
+        ajaxURL = ["api", tripName, "dates/"].join("/");
 
         $.ajax({
             url: ajaxURL,
@@ -109,10 +109,10 @@ var onDateChanged = function() {
     if (chosenElement.val() != "") {
         console.log("foobar");
 
-        datasetName = $("#dropdown-dataset").chosen().val();
+        tripName = $("#dropdown-trip").chosen().val();
         date = chosenElement.val();
 
-        ajaxURL = ["api", datasetName, date, "places/"].join("/");
+        ajaxURL = ["api", tripName, date, "places/"].join("/");
         $.ajax({
             url: ajaxURL,
             success: function(data) {
@@ -134,11 +134,11 @@ var onPlaceChanged = function() {
 
     chosenElement = $("#dropdown-place").chosen();
     if (chosenElement.val() != "") {
-        datasetName = $("#dropdown-dataset").chosen().val();
+        tripName = $("#dropdown-trip").chosen().val();
         date = $("#dropdown-date").chosen().val();
         place = chosenElement.val();
 
-        ajaxURL = ["api", datasetName, date, place, "sample-types/"].join("/");
+        ajaxURL = ["api", tripName, date, place, "sample-types/"].join("/");
 
         $.ajax({
             url: ajaxURL,
@@ -156,12 +156,12 @@ var onPlaceChanged = function() {
 
 var onLoadData = function() {
     if ($("#dropdown-sample-type").val() != "") {
-        datasetName = $("#dropdown-dataset").chosen().val();
+        tripName = $("#dropdown-trip").chosen().val();
         date = $("#dropdown-date").chosen().val();
         place = $("#dropdown-place").chosen().val();
         sampleType = $("#dropdown-sample-type").chosen().val();
 
-        ajaxURL = ["api", datasetName, date, place, sampleType].join("/") + "/";
+        ajaxURL = ["api", tripName, date, place, sampleType].join("/") + "/";
 
         console.log("Populating map!");
         mapClearMarkers();
@@ -280,7 +280,7 @@ $(document).ready(function() {
     });
 
     dropdownInit();
-    $("#dropdown-dataset").chosen().change(onDatasetChanged);
+    $("#dropdown-trip").chosen().change(onTripChanged);
     $("#dropdown-date").chosen().change(onDateChanged);
     $("#dropdown-place").chosen().change(onPlaceChanged);
     $("#btn-show-filter-select").click(onStartFilterSelect);
