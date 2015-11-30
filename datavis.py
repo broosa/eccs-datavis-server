@@ -44,30 +44,30 @@ def psql_query(query, args=None, include_columns=False):
 def index():
     return render_template("index.html")
 
-@app.route('/api/datasets/')
-def api_list_datasets():
-    datasets = psql_query("SELECT DISTINCT ON (dataset) dataset FROM field_data")
-    return flask.jsonify(datasets=[item[0] for item in datasets])
+@app.route('/api/trips/')
+def api_list_trips():
+    trips = psql_query("SELECT DISTINCT ON (dataset) dataset FROM field_data")
+    return flask.jsonify(trips=[item[0] for item in trips])
 
-@app.route('/api/<regex("[a-zA-Z0-9_ ]+"):dataset_name>/dates/')
-def api_list_dates(dataset_name):
-    dates = psql_query("SELECT DISTINCT ON (date(tstamp)) to_char(tstamp, 'YYYY-MM-DD') FROM field_data WHERE dataset=%s", (dataset_name,))
+@app.route('/api/<regex("[a-zA-Z0-9_ ]+"):trip_name>/dates/')
+def api_list_dates(trip_name):
+    dates = psql_query("SELECT DISTINCT ON (date(tstamp)) to_char(tstamp, 'YYYY-MM-DD') FROM field_data WHERE dataset=%s", (trip_name,))
     #We don't want to return a list of lists in json; we only want the elements in each list. Hence, we unpack
     #Each row so that each is a single litem in the JSON array
-    return flask.jsonify(dataset=dataset_name, dates=[date[0] for date in dates])
+    return flask.jsonify(trip=trip_name, dates=[date[0] for date in dates])
 
-@app.route('/api/<regex("[a-zA-Z0-9_ ]+"):dataset_name>/<regex("\d{4}-\d{2}-\d{2}"):date_string>/places/')
-def api_list_places(dataset_name, date_string):
-    places = psql_query("SELECT DISTINCT ON (site) site FROM field_data WHERE dataset=%s AND date(tstamp)=(DATE %s)", (dataset_name, date_string))
-    return flask.jsonify(dataset=dataset_name, date=date_string, places=[place[0] for place in places])
+@app.route('/api/<regex("[a-zA-Z0-9_ ]+"):trip_name>/<regex("\d{4}-\d{2}-\d{2}"):date_string>/places/')
+def api_list_places(trip_name, date_string):
+    places = psql_query("SELECT DISTINCT ON (site) site FROM field_data WHERE dataset=%s AND date(tstamp)=(DATE %s)", (trip_name, date_string))
+    return flask.jsonify(trip=trip_name, date=date_string, places=[place[0] for place in places])
 
-@app.route('/api/<regex("[a-zA-Z0-9_ ]+"):dataset_name>/<regex("\d{4}-\d{2}-\d{2}"):date_string>/<regex("[a-zA-Z0-9_ ]+"):place_name>/sample-types/')
-def api_list_sample_types(dataset_name, date_string, place_name):
-    s_types = psql_query("SELECT DISTINCT ON (sensor) sensor FROM field_data WHERE dataset=%s AND date(tstamp)=(DATE %s) AND site=%s", (dataset_name, date_string, place_name))
-    return flask.jsonify(dataset=dataset_name, date=date_string, place=place_name, sampleTypes=[s_type[0] for s_type in s_types])
+@app.route('/api/<regex("[a-zA-Z0-9_ ]+"):trip_name>/<regex("\d{4}-\d{2}-\d{2}"):date_string>/<regex("[a-zA-Z0-9_ ]+"):place_name>/sample-types/')
+def api_list_sample_types(trip_name, date_string, place_name):
+    s_types = psql_query("SELECT DISTINCT ON (sensor) sensor FROM field_data WHERE dataset=%s AND date(tstamp)=(DATE %s) AND site=%s", (trip_name, date_string, place_name))
+    return flask.jsonify(trip=trip_name, date=date_string, place=place_name, sampleTypes=[s_type[0] for s_type in s_types])
       
-@app.route('/api/<regex("[a-zA-Z0-9_ ]+"):dataset_name>/<regex("\d{4}-\d{2}-\d{2}"):date_string>/<regex("[a-zA-Z0-9_ ]+"):place_name>/<regex("[a-zA-Z0-9_ ]+"):sample_type>/')
-def api_list_data(dataset_name, date_string, place_name, sample_type):
+@app.route('/api/<regex("[a-zA-Z0-9_ ]+"):trip_name>/<regex("\d{4}-\d{2}-\d{2}"):date_string>/<regex("[a-zA-Z0-9_ ]+"):place_name>/<regex("[a-zA-Z0-9_ ]+"):sample_type>/')
+def api_list_data(trip_name, date_string, place_name, sample_type):
     
     is_csv = False
 
@@ -79,7 +79,7 @@ def api_list_data(dataset_name, date_string, place_name, sample_type):
     except KeyError:
         pass
 
-    data = psql_query("SELECT * FROM field_data WHERE dataset=%s AND date(tstamp)=(DATE %s) AND site=%s AND sensor=%s", (dataset_name, date_string, place_name, sample_type))
+    data = psql_query("SELECT * FROM field_data WHERE dataset=%s AND date(tstamp)=(DATE %s) AND site=%s AND sensor=%s", (trip_name, date_string, place_name, sample_type))
     if is_csv:
         cursor = db_conn.cursor()
         cursor.execute("SELECT * FROM field_data LIMIT 0")
@@ -100,7 +100,7 @@ def api_list_data(dataset_name, date_string, place_name, sample_type):
         return csv_response
         
     else:
-        return flask.jsonify(dataset=dataset_name, date=date_string, place=place_name, sample_type=sample_type, data=data)
+        return flask.jsonify(dataset=trip_name, date=date_string, place=place_name, sample_type=sample_type, data=data)
       
 
 #Start the testing server
