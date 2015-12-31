@@ -4,8 +4,10 @@ import flask
 
 from psycopg2.extensions import AsIs
 
-from flask import Flask, Response, render_template, request, url_for
+from flask import Flask, Response, session, render_template, request, redirect, url_for
 from werkzeug.routing import BaseConverter
+
+from hashids import Hashids
 
 from configparser import SafeConfigParser
 
@@ -16,6 +18,7 @@ app = Flask(__name__)
 #app.config['DEBUG'] = False
 
 class RegexConverter(BaseConverter):
+
     def __init__(self, url_map, *items):
         super(RegexConverter, self).__init__(url_map)
         self.regex = items[0]
@@ -36,13 +39,32 @@ def psql_query(query, args=None, include_columns=False):
     else:   
         return cursor.fetchall()
 
+@app.route('/filter/<filter_id>/')
+def api_filter_link(filter_id):
+    hashids = Hashids()
+
+    #Check to make sure that the filter ID is valid
+    #If it isn't, we don't set any cookie data
+    filter_info = hashids.decode(filter_id)
+
+    if filter_info and len(filter_info) == 4:
+        session["filter_id"] = filter_id
+    
+    return redirect('/')
+
 #@app.route('/api/<regex("[a-zA-Z0-9]+"):command>/<path:args>/')
 #def req_api(command, args):
 #    return render_template("base.html", command=command)
 #    #return app.root_path
 @app.route('/')
 def index():
-    return render_template("index.html")
+
+    if 'filter_id'   in session:
+        filter_id = session["filter_id"]
+        del session["filter_id"]
+        return render_template("index.html", filter_id=filter_id)
+    else:
+        return render_template("index.html", filter_id="")
 
 @app.route('/api/trips/')
 def api_list_trips():
@@ -113,6 +135,10 @@ if __name__ == "__main__":
     db = config.get("database", "db")
     username = config.get("database", "user")
     password = config.get("database", "password")
+
+    secret_key = config.get("system", "secret_key")
+
+    app.config["SECRET_KEY"] = secret_key
 
     global db_conn;
     

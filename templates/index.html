@@ -16,9 +16,13 @@
 		<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.flot.js') }}"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.flot.time.js') }}"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.flot.axislabels.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/hashids.min.js') }}"></script>
+        <script type="text/javascript">
+            var filterID = "{{ filter_id }}";
+        </script>
         <title>Data Visualizer</title>
 	</head>
-	<body>
+	<body>  
         <div style="height: 100%; width: 100%; position: absolute">
 			<div id="map-viewport" class="map-container">
 			</div>
@@ -26,7 +30,7 @@
         <div class="control-panel-overlay">
             <div class="content-wrapper with-shadow">
                 <div style="width: 100%">
-					<div class="row" id="filter-container" style="padding-bottom: 0px">
+					<div class="row" id="filter-container" style="padding-bottom: 0px; display: none">
 						<div class="col-md-3 dropdown-container">
 							<div>
 								<label for="dropdown-trip">Trip</label><br>
@@ -64,15 +68,14 @@
 						</div>
 				    </div>
 					<div class="row" id="button-container" style="padding: 10px; display: none">
-						<button id="btn-show-filter-select" class="btn btn-default" style="margin-right: 10px">Select Filter</button>
+                        <a id="filter-link" href="#">Permalink</a>
+						<button id="btn-show-filter-select" class="btn btn-default" style="margin-right: 10px; margin-left: 10px">Select Filter</button>
 						<a id="btn-csv-download" class="btn btn-primary pull-right disabled" href="#">Download CSV</a>
 					</div>
-					
 				</div>
             </div>
         </div>
 		<div id="timeplot-container" class="bottom-timeplot-container with-shadow">
 		</div>
-		<script type="text/javascript">mapInit();</script>
     </body>
 </html>
