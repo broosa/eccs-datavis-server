@@ -2,7 +2,7 @@ var dataMap;
 var markers = [];
 var selected_marker = null;
 
-var mapInit = function() {
+function mapInit() {
 
     //Center the map on iceland
     var mapProps = {
@@ -15,35 +15,38 @@ var mapInit = function() {
 };
 
 //Disables the download button (deprecated?)
-var resetCSVButton = function() {
+function resetCSVButton() {
     element = $("#btn-csv-download");
     element.attr("href", "#");
     element.addClass("disabled");
 };
 
-var mapClearMarkers = function() {
+function mapClearMarkers() {
     while (markers.length > 0) {
         markers.pop().setMap(null);
     }
 };
 
-var resetDropdown = function(element) {
+//Clears all options from a dropdown
+function resetDropdown(element) {
     element.val(element.children("option:first").val());
     element.children("option").not("[value='']").remove();
     element.trigger("chosen:updated", true);
 };
 
-var enableDropdown = function(element) {
+//Enables a dropdown
+function enableDropdown(element) {
     element.prop("disabled", false);
     element.trigger("chosen:updated", true);
 };
 
-var disableDropdown = function(element) {
+//Disables a dropdown
+function disableDropdown(element) {
     element.prop("disabled", "disabled");
     element.trigger("chosen:udpated", true);
 };
 
-var populateDropdown = function(element, data) {
+function populateDropdown(element, data) {
     //For each item in the data, add an <option> element
     $.each(data, function(index, value) {
         option = $("<option></option>").attr("value", value).text(value);
@@ -52,7 +55,7 @@ var populateDropdown = function(element, data) {
     });
 };
 
-var onStartFilterSelect = function() {
+function onStartFilterSelect() {
     mapClearMarkers();
     resetCSVButton();
     //Hide the buttons
@@ -66,7 +69,7 @@ var onStartFilterSelect = function() {
     }, 200);
 }
 
-var dropdownInit = function() {
+function dropdownInit() {
     $.ajax({
         url: "api/trips/",
         success: function(data) {
@@ -76,7 +79,7 @@ var dropdownInit = function() {
     });
 };
 
-var onTripChanged = function() {
+function onTripChanged() {
     console.log("Handling dropdown change event...");
     chosenElement = $("#dropdown-trip").chosen()
     if (chosenElement.val() != "") {
@@ -104,7 +107,7 @@ var onTripChanged = function() {
     }
 };
 
-var onDateChanged = function() {
+function onDateChanged() {
     chosenElement = $("#dropdown-date").chosen();
     if (chosenElement.val() != "") {
         console.log("foobar");
@@ -130,7 +133,7 @@ var onDateChanged = function() {
     }
 };
 
-var onPlaceChanged = function() {
+function onPlaceChanged() {
 
     chosenElement = $("#dropdown-place").chosen();
     if (chosenElement.val() != "") {
@@ -154,16 +157,30 @@ var onPlaceChanged = function() {
     }
 };
 
-var onLoadData = function() {
+function onLoadData() {
     if ($("#dropdown-sample-type").val() != "") {
         tripName = $("#dropdown-trip").chosen().val();
+        tripIndex = $("#dropdown-trip").prop("selectedIndex");
+
         date = $("#dropdown-date").chosen().val();
+        dateIndex = $("#dropdown-date").prop("selectedIndex");
+
         place = $("#dropdown-place").chosen().val();
+        placeIndex = $("#dropdown-place").prop("selectedIndex");
+
         sampleType = $("#dropdown-sample-type").chosen().val();
+        sampleTypeIndex = $("#dropdown-sample-type").prop("selectedIndex");
 
         ajaxURL = ["api", tripName, date, place, sampleType].join("/") + "/";
 
+        //Generate a permalink
+        hashids = new Hashids();
+        filterID = hashids.encode(tripIndex, dateIndex, placeIndex, sampleTypeIndex);
+    
+        permalinkURL = ["/filter", filterID, ""].join("/")
+        $("#filter-link").attr("href", permalinkURL);
         console.log("Populating map!");
+
         mapClearMarkers();
         $.ajax({
             url: ajaxURL,
@@ -247,7 +264,7 @@ var onLoadData = function() {
     }
 };
 
-var onPlotHover = function(event, pos, item) {
+function onPlotHover(event, pos, item) {
     if (item != null) {
         //console.log(item);
         point_index = item.dataIndex;
@@ -268,22 +285,91 @@ var onPlotHover = function(event, pos, item) {
         selected_marker.setMap(dataMap);
 
         selected_marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
-
     }
 };
 
+function loadFilter(filterID) {
+    hashids = new Hashids();
+    filter_info = hashids.decode(filterID);
 
-$(document).ready(function() {
+    var tripName = "";
+    var date = "";
+    var place = "";
+    var sampleType = "";
+
+    //Load the trips for the given filter
+    $.ajax({
+        url: "api/trips/",
+        success: function(data) {
+            tripName = data.trips[filter_info[0] - 1];  
+        }
+    }).then(function () {
+
+        //Load the available dates
+        return $.ajax({
+            url: ["api", tripName, "dates/"].join("/"),
+            success: function(data) {
+                populateDropdown($("#dropdown-date"), data.dates);
+                date = data.dates[filter_info[1] - 1];
+            }
+        });
+    }).then(function() {
+
+        //Load Places
+        return $.ajax({
+            url: ["api", tripName, date, "places/"].join("/"),
+            success: function(data) {
+                populateDropdown($("#dropdown-place"), data.places);
+                place = data.places[filter_info[2] - 1];
+            }
+        });
+    }).then(function() {
+        return $.ajax({
+            url: ["api", tripName, date, place, "sample-types/"].join("/"),
+            success: function(data) {
+                populateDropdown($("#dropdown-sample-type"), data.sampleTypes);
+                sampleType = data.sampleTypes[filter_info[3] - 1];
+            }
+        });
+    }).then(function() {        
+        //TODO: find better way to load initial selections
+        enableDropdown($("#dropdown-trip"));
+        $("#dropdown-trip").chosen().val(tripName);
+        $("#dropdown-trip").trigger("chosen:updated");
+
+        enableDropdown($("#dropdown-date"));
+        $("#dropdown-date").chosen().val(date);
+        $("#dropdown-date").trigger("chosen:updated");
+
+        enableDropdown($("#dropdown-place"));
+        $("#dropdown-place").chosen().val(place);
+        $("#dropdown-place").trigger("chosen:updated");
+
+        enableDropdown($("#dropdown-sample-type"));        
+        $("#dropdown-sample-type").chosen().val(sampleType);
+        $("#dropdown-sample-ty").trigger("chosen:updated");
+        onLoadData();
+    });
+}
+
+$(window).load(function() {
+    mapInit();
     console.log("Setting up comboboxes");
     $(".chosen-select").chosen({
         disable_search_threshold: 10
     });
 
     dropdownInit();
+    //Register dropdown event handlers
     $("#dropdown-trip").chosen().change(onTripChanged);
     $("#dropdown-date").chosen().change(onDateChanged);
     $("#dropdown-place").chosen().change(onPlaceChanged);
     $("#btn-show-filter-select").click(onStartFilterSelect);
     $("#btn-load-data").click(onLoadData);
     $("#timeplot-container").bind("plothover", onPlotHover);
+    
+    $("#filter-container").slideDown(200);
+    if (filterID != "") {
+        loadFilter(filterID);
+    }
 });
