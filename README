@@ -8,9 +8,16 @@ something like this:
 
 [system]
 debug = False
+secret_key = <cookie crypto secret key>
 
 [database]
 host = <db hostname>
 db = <db name>
 user = <db user>
 password = <db password>
+
+Required python packages:
+
+psycopg2
+flask
+hashids
