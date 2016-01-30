@@ -2,16 +2,22 @@ var dataMap;
 var markers = [];
 var selected_marker = null;
 
+//NOTE: OSM tile servers for testing use only.
+var TILE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+
+
 function mapInit() {
 
-    //Center the map on iceland
-    var mapProps = {
-        center: new google.maps.LatLng(64.810, -18.245),
-        zoom: 6,
-        mapTypeId: google.maps.MapTypeId.TERRAIN
-    };
-    //Instantiate the map
-    dataMap = new google.maps.Map(document.getElementById("map-viewport"), mapProps);
+    dataMap = L.map('map-viewport').setView([64.810, -18.245], 13);
+
+    var baseLayer = new L.TileLayer(TILE_URL, {
+        attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+        maxZoom: 18,
+    })
+
+    dataMap.invalidateSize(false);
+    dataMap.addLayer(baseLayer);
+
 };
 
 //Disables the download button (deprecated?)
@@ -176,7 +182,7 @@ function onLoadData() {
         //Generate a permalink
         hashids = new Hashids();
         filterID = hashids.encode(tripIndex, dateIndex, placeIndex, sampleTypeIndex);
-    
+
         permalinkURL = ["/filter", filterID, ""].join("/")
         $("#filter-link").attr("href", permalinkURL);
         console.log("Populating map!");
@@ -185,25 +191,23 @@ function onLoadData() {
         $.ajax({
             url: ajaxURL,
             success: function(data) {
-                bounds = new google.maps.LatLngBounds();
                 //Create a map marker from each latitude/longitude pair
                 $.each(data.data, function(index, value) {
-                    pointLoc = new google.maps.LatLng(value[10], value[11]);
-                    bounds.extend(pointLoc);
-                    //console.log(value);
-                    //console.log(pointLoc);
-                    var marker = new google.maps.Marker({
-                        position: pointLoc,
-                        map: dataMap,
-                        title: "Data Point",
-                        icon: "https://maps.gstatic.com/intl/en_us/mapfiles/markers2/measle_blue.png"
-
+                    pointLoc = new L.LatLng(value[10], value[11]);
+                    var marker = new L.CircleMarker(pointLoc, {
+                        radius: 2,
+                        opacity: 1.0,
+                        fillOpacity: 1.0
                     });
                     markers.push(marker);
                 });
 
+                markerGroup = L.featureGroup(markers);
+
+                markerBounds = markerGroup.getBounds().pad(0.5);
+                markerGroup.addTo(dataMap);
                 //Set the map so that it fits all the points we've just gotten
-                dataMap.fitBounds(bounds);
+                dataMap.fitBounds(markerBounds);
 
                 $("#btn-csv-download").removeClass("disabled");
                 $("#btn-csv-download").attr("href", ajaxURL + "?fmt=csv");
@@ -253,7 +257,7 @@ function onLoadData() {
                     }
                 }
 
-                console.log(data_series);
+                //console.log(data_series);
 
                 $.plot($("#timeplot-container"), datasets, options);
                 $("#timeplot-container").animate({
@@ -266,25 +270,21 @@ function onLoadData() {
 
 function onPlotHover(event, pos, item) {
     if (item != null) {
-        //console.log(item);
         point_index = item.dataIndex;
 
-        console.log("Selecting new marker");
+        //console.log("Selecting new marker");
         hover_point = markers[point_index];
 
         if (selected_marker != hover_point) {
-            hover_point.setIcon("http://maps.google.com/mapfiles/ms/icons/red-dot.png");
+            hover_point.setStyle({color: "#FF0000", fillColor: "#FF0000"});
         }
 
         if (selected_marker != null && selected_marker != hover_point) {
-            selected_marker.setIcon("https://maps.gstatic.com/intl/en_us/mapfiles/markers2/measle_blue.png");
-            selected_marker.setZIndex(0);
+            selected_marker.setStyle({color: "#0000FF", fillColor: "#0000FF"});
         }
 
         selected_marker = hover_point;
-        selected_marker.setMap(dataMap);
-
-        selected_marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+        selected_marker.bringToFront();
     }
 };
 
@@ -301,7 +301,7 @@ function loadFilter(filterID) {
     $.ajax({
         url: "api/trips/",
         success: function(data) {
-            tripName = data.trips[filter_info[0] - 1];  
+            tripName = data.trips[filter_info[0] - 1];
         }
     }).then(function () {
 
@@ -331,7 +331,7 @@ function loadFilter(filterID) {
                 sampleType = data.sampleTypes[filter_info[3] - 1];
             }
         });
-    }).then(function() {        
+    }).then(function() {
         //TODO: find better way to load initial selections
         enableDropdown($("#dropdown-trip"));
         $("#dropdown-trip").chosen().val(tripName);
@@ -345,7 +345,7 @@ function loadFilter(filterID) {
         $("#dropdown-place").chosen().val(place);
         $("#dropdown-place").trigger("chosen:updated");
 
-        enableDropdown($("#dropdown-sample-type"));        
+        enableDropdown($("#dropdown-sample-type"));
         $("#dropdown-sample-type").chosen().val(sampleType);
         $("#dropdown-sample-ty").trigger("chosen:updated");
         onLoadData();
@@ -367,7 +367,7 @@ $(window).load(function() {
     $("#btn-show-filter-select").click(onStartFilterSelect);
     $("#btn-load-data").click(onLoadData);
     $("#timeplot-container").bind("plothover", onPlotHover);
-    
+
     $("#filter-container").slideDown(200);
     if (filterID != "") {
         loadFilter(filterID);
