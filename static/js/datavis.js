@@ -257,7 +257,7 @@ function onLoadData() {
                     }
                 }
 
-                console.log(data_series);
+                //console.log(data_series);
 
                 $.plot($("#timeplot-container"), datasets, options);
                 $("#timeplot-container").animate({
@@ -270,10 +270,9 @@ function onLoadData() {
 
 function onPlotHover(event, pos, item) {
     if (item != null) {
-        //console.log(item);
         point_index = item.dataIndex;
 
-        console.log("Selecting new marker");
+        //console.log("Selecting new marker");
         hover_point = markers[point_index];
 
         if (selected_marker != hover_point) {
