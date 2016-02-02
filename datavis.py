@@ -25,6 +25,9 @@ class RegexConverter(BaseConverter):
 
 app.url_map.converters['regex'] = RegexConverter
 
+#Stores values retrieved from the config file
+base_config = {}
+
 #This function should eventually be replaced to avoid getting
 #more data than we actually need
 def psql_query(query, args=None, include_columns=False):
@@ -62,9 +65,9 @@ def index():
     if 'filter_id'   in session:
         filter_id = session["filter_id"]
         del session["filter_id"]
-        return render_template("index.html", filter_id=filter_id)
+        return render_template("index.html", config=base_config, filter_id=filter_id)
     else:
-        return render_template("index.html", filter_id="")
+        return render_template("index.html", config=base_config, filter_id="")
 
 @app.route('/api/trips/')
 def api_list_trips():
@@ -137,6 +140,8 @@ if __name__ == "__main__":
     password = config.get("database", "password")
 
     secret_key = config.get("system", "secret_key")
+    base_config["map_url"] = config.get("system", "map_url")
+    base_config["map_attrib"] = config.get("system", "map_attrib")
 
     app.config["SECRET_KEY"] = secret_key
 

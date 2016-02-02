@@ -11,15 +11,18 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}"/>
     <script src="{{ url_for('static', filename='js/jquery-2.1.4.js') }}"></script>
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-		<script src="{{ url_for('static', filename='js/chosen.jquery.js') }}"></script>
-		<script src="{{ url_for('static', filename='js/leaflet.js') }}"></script>
-		<script src="{{ url_for('static', filename='js/datavis.js') }}"></script>
-		<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.flot.js') }}"></script>
-		<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.flot.time.js') }}"></script>
-		<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.flot.axislabels.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/chosen.jquery.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/leaflet.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/datavis.js') }}"></script>
+	<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.flot.js') }}"></script>
+	<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.flot.time.js') }}"></script>
+	<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.flot.axislabels.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/hashids.min.js') }}"></script>
+    
     <script type="text/javascript">
         var filterID = "{{ filter_id }}";
+        var mapURL = "{{ config['map_url'] }}";
+        var mapAttribution = "{{ config['map_attrib'] }}";
     </script>
     <title>Data Visualizer</title>
 	</head>
