@@ -1,32 +1,32 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8"/>
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/leaflet.css') }}" />
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/fonts.css') }}" />
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/chosen.min.css') }}"/>
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}"/>
-        <!--<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap-theme.min.css') }}"/>-->
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/chosen.bootstrap.min.css') }}"/>
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}"/>
-        <script src="{{ url_for('static', filename='js/jquery-2.1.4.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/chosen.jquery.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/leaflet.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/datavis.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/flot.all.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/hashids.min.js') }}"></script>
-
-        <script type="text/javascript">
-            var filterID = "{{ filter_id }}";
-            var mapURL = "{{ config['map_view']['map_url'] }}";
-            var mapAttribution = "{{ config['map_view']['map_attrib']}}";
-            var mapCenter = {{ config['map_view']['map_start_center']}};
-            var mapZoom = {{ config['map_view']['map_start_zoom']}};
-        </script>
-        <title>Data Visualizer</title>
-    </head>
-    <body>
+	<head>
+		<meta charset="utf-8"/>
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/leaflet.css') }}" />
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/fonts.css') }}" />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/chosen.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.css') }}"/>
+    <!--<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap-theme.min.css') }}"/>-->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/chosen.bootstrap.min.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}"/>
+    <script src="{{ url_for('static', filename='js/jquery-2.1.4.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/chosen.jquery.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/leaflet.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/datavis.js') }}"></script>
+	<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.flot.js') }}"></script>
+	<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.flot.time.js') }}"></script>
+	<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.flot.axislabels.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/hashids.min.js') }}"></script>
+    
+    <script type="text/javascript">
+        var filterID = "{{ filter_id }}";
+        var mapURL = "{{ config['map_url'] }}";
+        var mapAttribution = "{{ config['map_attrib']|safe }}";
+    </script>
+    <title>Data Visualizer</title>
+	</head>
+	<body>
         <div style="height: 100%; width: 100%; position: absolute">
             <div id="map-viewport" class="map-container">
             </div>
