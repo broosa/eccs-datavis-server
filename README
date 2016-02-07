@@ -10,6 +10,10 @@ something like this:
 debug = False
 secret_key = <cookie crypto secret key>
 
+#URL to OSM tile server
+map_url = http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png
+map_attrib = &copy <a href="http://www.opentopomap.org/">OpenTopoMap</a> Contributors
+
 [database]
 host = <db hostname>
 db = <db name>

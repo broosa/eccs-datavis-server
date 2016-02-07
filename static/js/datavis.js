@@ -2,16 +2,12 @@ var dataMap;
 var markers = [];
 var selected_marker = null;
 
-//NOTE: OSM tile servers for testing use only.
-var TILE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-
-
 function mapInit() {
 
     dataMap = L.map('map-viewport').setView([64.810, -18.245], 13);
 
-    var baseLayer = new L.TileLayer(TILE_URL, {
-        attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+    var baseLayer = new L.TileLayer(mapURL, {
+        attribution: mapAttribution,
         maxZoom: 18,
     })
 
