@@ -32,6 +32,6 @@ something like this:
 
 # Required Packages
 
-flask
-psycopg2
-hashids
+- flask
+- psycopg2
+- hashids
