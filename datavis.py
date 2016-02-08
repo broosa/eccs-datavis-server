@@ -1,5 +1,5 @@
 import psycopg2
-
+import json
 import flask
 
 from psycopg2.extensions import AsIs
@@ -39,7 +39,7 @@ def psql_query(query, args=None, include_columns=False):
 
     if include_columns:
         return ([desc[0] for desc in cusor.description], cursor.fetchall())
-    else:   
+    else:
         return cursor.fetchall()
 
 @app.route('/filter/<filter_id>/')
@@ -52,7 +52,7 @@ def api_filter_link(filter_id):
 
     if filter_info and len(filter_info) == 4:
         session["filter_id"] = filter_id
-    
+
     return redirect('/')
 
 #@app.route('/api/<regex("[a-zA-Z0-9]+"):command>/<path:args>/')
@@ -90,15 +90,15 @@ def api_list_places(trip_name, date_string):
 def api_list_sample_types(trip_name, date_string, place_name):
     s_types = psql_query("SELECT DISTINCT ON (sensor) sensor FROM field_data WHERE dataset=%s AND date(tstamp)=(DATE %s) AND site=%s", (trip_name, date_string, place_name))
     return flask.jsonify(trip=trip_name, date=date_string, place=place_name, sampleTypes=[s_type[0] for s_type in s_types])
-      
+
 @app.route('/api/<regex("[a-zA-Z0-9_ ]+"):trip_name>/<regex("\d{4}-\d{2}-\d{2}"):date_string>/<regex("[a-zA-Z0-9_ ]+"):place_name>/<regex("[a-zA-Z0-9_ ]+"):sample_type>/')
 def api_list_data(trip_name, date_string, place_name, sample_type):
-    
+
     is_csv = False
 
     try:
         data_format = request.args.get("fmt")
-        
+
         if data_format == "csv":
             is_csv = True
     except KeyError:
@@ -110,7 +110,7 @@ def api_list_data(trip_name, date_string, place_name, sample_type):
         cursor.execute("SELECT * FROM field_data LIMIT 0")
 
         column_names = [desc[0] for desc in cursor.description]
-    
+
         #In case the requested csv is huge, return it bit by bit
         def stream_csv():
             yield ",".join(column_names) + "\n"
@@ -123,31 +123,27 @@ def api_list_data(trip_name, date_string, place_name, sample_type):
         csv_response.headers["Content-Disposition"] = 'inline; filename="data.csv"'
 
         return csv_response
-        
+
     else:
         return flask.jsonify(dataset=trip_name, date=date_string, place=place_name, sample_type=sample_type, data=data)
-      
+
+def load_config(filename):
+    conf_file = open(filename, "r")
+
+    base_config = json.load(conf_file)
+    return base_config
 
 #Start the testing server
 if __name__ == "__main__":
 
-    config = SafeConfigParser({"debug": False})
-    config.read("server.conf")
-	
-    host = config.get("database", "host")
-    db = config.get("database", "db")
-    username = config.get("database", "user")
-    password = config.get("database", "password")
-
-    secret_key = config.get("system", "secret_key")
-    base_config["map_url"] = config.get("system", "map_url")
-    base_config["map_attrib"] = config.get("system", "map_attrib")
-
-    app.config["SECRET_KEY"] = secret_key
-
     global db_conn;
-    
+    base_config = load_config("server.json");
     app.logger.info("Connecting to postgres...")
+    host = base_config["database"]["host"]
+    db = base_config["database"]["db"]
+    username = base_config["database"]["user"]
+    password = base_config["database"]["password"]
     db_conn = psycopg2.connect(host=host, database=db, user=username, password=password)
 
+    app.config["SECRET_KEY"] = base_config["system"]["secret_key"]
     app.run(debug=True, host='0.0.0.0')

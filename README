@@ -6,22 +6,27 @@ The tool needs to be configured to access the databse correctly.
 The server config should be stored in server.conf with a format
 something like this:
 
-[system]
-debug = False
-secret_key = <cookie crypto secret key>
+  {
+    "database": {
+      "host": "<db_hostname>",
+      "db": "<db_name>",
+      "user": "<db_username>",
+      "password": "<db_password>"
+    },
+    "map_view": {
+      "map_start_center": [64.810, -18.245],
+      "map_start_zoom": 7,
+      "map_url": "http://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png",
+      "map_attrib": "&copy <a href='http://www.opentopomap.org/'>OpenTopoMap</a> Contributors"
+    },
+    "system": {
+      "secret_key": "<flask_secret_key>"
+    }
+  }
 
-#URL to OSM tile server
-map_url = http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png
-map_attrib = &copy <a href="http://www.opentopomap.org/">OpenTopoMap</a> Contributors
 
-[database]
-host = <db hostname>
-db = <db name>
-user = <db user>
-password = <db password>
+= Required Packages =
 
-Required python packages:
-
-psycopg2
 flask
+psycopg2
 hashids

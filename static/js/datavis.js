@@ -4,7 +4,7 @@ var selected_marker = null;
 
 function mapInit() {
 
-    dataMap = L.map('map-viewport').setView([64.810, -18.245], 13);
+    dataMap = L.map('map-viewport').setView(mapCenter, mapZoom);
 
     var baseLayer = new L.TileLayer(mapURL, {
         attribution: mapAttribution,
