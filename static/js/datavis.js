@@ -24,9 +24,9 @@ function resetCSVButton() {
 };
 
 function mapClearMarkers() {
-    while (markers.length > 0) {
-        markers.pop().setMap(null);
-    }
+    $.each(markers, function(index, value) {
+      dataMap.removeLayer(value);
+    });
 };
 
 //Clears all options from a dropdown
