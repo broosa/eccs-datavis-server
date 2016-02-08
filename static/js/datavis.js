@@ -4,7 +4,7 @@ var selected_marker = null;
 
 function mapInit() {
 
-    dataMap = L.map('map-viewport').setView(mapCenter, mapZoom);
+    dataMap = L.map('map-viewport').setView([64.810, -18.245], 13);
 
     var baseLayer = new L.TileLayer(mapURL, {
         attribution: mapAttribution,
@@ -24,9 +24,10 @@ function resetCSVButton() {
 };
 
 function mapClearMarkers() {
-    $.each(markers, function(index, value) {
-      dataMap.removeLayer(value);
-    });
+    while (markers.length > 0) {
+        var marker = markers.pop();
+        dataMap.removeLayer(marker);  
+    }
 };
 
 //Clears all options from a dropdown
