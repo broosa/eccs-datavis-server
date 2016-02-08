@@ -25,7 +25,8 @@ function resetCSVButton() {
 
 function mapClearMarkers() {
     while (markers.length > 0) {
-        markers.pop().setMap(null);
+        var marker = markers.pop();
+        dataMap.removeLayer(marker);  
     }
 };
 
