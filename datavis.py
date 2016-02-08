@@ -145,5 +145,7 @@ if __name__ == "__main__":
     password = base_config["database"]["password"]
     db_conn = psycopg2.connect(host=host, database=db, user=username, password=password)
 
+    #Start the web server
+    bind_port = base_config["system"]["bind_port"]
     app.config["SECRET_KEY"] = base_config["system"]["secret_key"]
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0', port=bind_port)
