@@ -45,12 +45,6 @@ def api_filter_link(filter_id):
 
     return redirect('/')
 
-# @app.route('/api/<regex("[a-zA-Z0-9]+"):command>/<path:args>/')
-# def req_api(command, args):
-#    return render_template("base.html", command=command)
-#    #return app.root_path
-
-
 @app.route('/')
 def index():
 
@@ -62,6 +56,14 @@ def index():
     else:
         return render_template("index.html", config=base_config, filter_id="")
 
+@app.route('/api/map/config/')
+def api_get_config():
+    map_url = base_config["map_view"]["map_url"]
+    map_center = base_config["map_view"]["map_start_center"]
+    map_zoom = base_config["map_view"]["map_start_zoom"]
+    map_attrib = base_config["map_view"]["map_attrib"]
+
+    return flask.jsonify(url=map_url, center=map_center, zoom=map_zoom, attrib=map_attrib)
 
 @app.route('/api/trips/')
 def api_list_trips():
