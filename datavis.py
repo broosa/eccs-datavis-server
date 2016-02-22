@@ -1,21 +1,12 @@
-import psycopg2
-import json
-import flask
+# -*- coding: utf-8 -*-
 
-from psycopg2.extensions import AsIs
+from app import app, base_config, db_conn
 
-from flask import Flask, Response, session, render_template, request, redirect, url_for
+from flask import Response, session, render_template, request, redirect, jsonify
 from werkzeug.routing import BaseConverter
 
 from hashids import Hashids
 
-from configparser import SafeConfigParser
-
-db_conn = None;
-
-app = Flask(__name__)
-
-#app.config['DEBUG'] = False
 
 class RegexConverter(BaseConverter):
 
@@ -25,11 +16,9 @@ class RegexConverter(BaseConverter):
 
 app.url_map.converters['regex'] = RegexConverter
 
-#Stores values retrieved from the config file
-base_config = {}
 
-#This function should eventually be replaced to avoid getting
-#more data than we actually need
+# This function should eventually be replaced to avoid getting
+# more data than we actually need
 def psql_query(query, args=None, include_columns=False):
     cursor = db_conn.cursor()
     if args is not None:
@@ -38,16 +27,17 @@ def psql_query(query, args=None, include_columns=False):
         cursor.execute(query)
 
     if include_columns:
-        return ([desc[0] for desc in cusor.description], cursor.fetchall())
+        return ([desc[0] for desc in cursor.description], cursor.fetchall())
     else:
         return cursor.fetchall()
+
 
 @app.route('/filter/<filter_id>/')
 def api_filter_link(filter_id):
     hashids = Hashids()
 
-    #Check to make sure that the filter ID is valid
-    #If it isn't, we don't set any cookie data
+    # Check to make sure that the filter ID is valid
+    # If it isn't, we don't set any cookie data
     filter_info = hashids.decode(filter_id)
 
     if filter_info and len(filter_info) == 4:
@@ -55,41 +45,48 @@ def api_filter_link(filter_id):
 
     return redirect('/')
 
-#@app.route('/api/<regex("[a-zA-Z0-9]+"):command>/<path:args>/')
-#def req_api(command, args):
-#    return render_template("base.html", command=command)
-#    #return app.root_path
 @app.route('/')
 def index():
 
-    if 'filter_id'   in session:
+    if 'filter_id' in session:
         filter_id = session["filter_id"]
         del session["filter_id"]
-        return render_template("index.html", config=base_config, filter_id=filter_id)
+        return render_template("index.html", config=base_config,
+                               filter_id=filter_id)
     else:
         return render_template("index.html", config=base_config, filter_id="")
+
+@app.route('/api/map/config/')
+def api_get_config():
+    map_url = base_config["map_view"]["map_url"]
+    map_center = base_config["map_view"]["map_start_center"]
+    map_zoom = base_config["map_view"]["map_start_zoom"]
+    map_attrib = base_config["map_view"]["map_attrib"]
+
+    return flask.jsonify(url=map_url, center=map_center, zoom=map_zoom, attrib=map_attrib)
 
 @app.route('/api/trips/')
 def api_list_trips():
     trips = psql_query("SELECT DISTINCT ON (dataset) dataset FROM field_data")
-    return flask.jsonify(trips=[item[0] for item in trips])
+    return jsonify(trips=[item[0] for item in trips])
+
 
 @app.route('/api/<regex("[a-zA-Z0-9_ ]+"):trip_name>/dates/')
 def api_list_dates(trip_name):
     dates = psql_query("SELECT DISTINCT ON (date(tstamp)) to_char(tstamp, 'YYYY-MM-DD') FROM field_data WHERE dataset=%s", (trip_name,))
     #We don't want to return a list of lists in json; we only want the elements in each list. Hence, we unpack
     #Each row so that each is a single litem in the JSON array
-    return flask.jsonify(trip=trip_name, dates=[date[0] for date in dates])
+    return jsonify(trip=trip_name, dates=[date[0] for date in dates])
 
 @app.route('/api/<regex("[a-zA-Z0-9_ ]+"):trip_name>/<regex("\d{4}-\d{2}-\d{2}"):date_string>/places/')
 def api_list_places(trip_name, date_string):
     places = psql_query("SELECT DISTINCT ON (site) site FROM field_data WHERE dataset=%s AND date(tstamp)=(DATE %s)", (trip_name, date_string))
-    return flask.jsonify(trip=trip_name, date=date_string, places=[place[0] for place in places])
+    return jsonify(trip=trip_name, date=date_string, places=[place[0] for place in places])
 
 @app.route('/api/<regex("[a-zA-Z0-9_ ]+"):trip_name>/<regex("\d{4}-\d{2}-\d{2}"):date_string>/<regex("[a-zA-Z0-9_ ]+"):place_name>/sample-types/')
 def api_list_sample_types(trip_name, date_string, place_name):
     s_types = psql_query("SELECT DISTINCT ON (sensor) sensor FROM field_data WHERE dataset=%s AND date(tstamp)=(DATE %s) AND site=%s", (trip_name, date_string, place_name))
-    return flask.jsonify(trip=trip_name, date=date_string, place=place_name, sampleTypes=[s_type[0] for s_type in s_types])
+    return jsonify(trip=trip_name, date=date_string, place=place_name, sampleTypes=[s_type[0] for s_type in s_types])
 
 @app.route('/api/<regex("[a-zA-Z0-9_ ]+"):trip_name>/<regex("\d{4}-\d{2}-\d{2}"):date_string>/<regex("[a-zA-Z0-9_ ]+"):place_name>/<regex("[a-zA-Z0-9_ ]+"):sample_type>/')
 def api_list_data(trip_name, date_string, place_name, sample_type):
@@ -111,7 +108,7 @@ def api_list_data(trip_name, date_string, place_name, sample_type):
 
         column_names = [desc[0] for desc in cursor.description]
 
-        #In case the requested csv is huge, return it bit by bit
+        # In case the requested csv is huge, return it bit by bit
         def stream_csv():
             yield ",".join(column_names) + "\n"
             for row in data:
@@ -119,33 +116,11 @@ def api_list_data(trip_name, date_string, place_name, sample_type):
                 yield ",".join([str(item) if item is not None else "" for item in row]) + "\n"
 
         csv_response = Response(stream_csv(), mimetype="text/csv")
-        #Set the file's download name
+        # Set the file's download name
         csv_response.headers["Content-Disposition"] = 'inline; filename="data.csv"'
 
         return csv_response
 
     else:
-        return flask.jsonify(dataset=trip_name, date=date_string, place=place_name, sample_type=sample_type, data=data)
-
-def load_config(filename):
-    conf_file = open(filename, "r")
-
-    base_config = json.load(conf_file)
-    return base_config
-
-#Start the testing server
-if __name__ == "__main__":
-
-    global db_conn;
-    base_config = load_config("server.json");
-    app.logger.info("Connecting to postgres...")
-    host = base_config["database"]["host"]
-    db = base_config["database"]["db"]
-    username = base_config["database"]["user"]
-    password = base_config["database"]["password"]
-    db_conn = psycopg2.connect(host=host, database=db, user=username, password=password)
-
-    #Start the web server
-    bind_port = base_config["system"]["bind_port"]
-    app.config["SECRET_KEY"] = base_config["system"]["secret_key"]
-    app.run(debug=True, host='0.0.0.0', port=bind_port)
+        return jsonify(dataset=trip_name, date=date_string,
+                       place=place_name, sample_type=sample_type, data=data)
