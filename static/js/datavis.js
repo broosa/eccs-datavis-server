@@ -26,7 +26,7 @@ function resetCSVButton() {
 function mapClearMarkers() {
     while (markers.length > 0) {
         var marker = markers.pop();
-        dataMap.removeLayer(marker);  
+        dataMap.removeLayer(marker);
     }
 };
 
@@ -369,4 +369,6 @@ $(window).load(function() {
     if (filterID != "") {
         loadFilter(filterID);
     }
+
+    $('#loading-overlay').delay(1000).fadeOut(500);
 });
