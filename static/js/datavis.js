@@ -346,6 +346,8 @@ function loadFilter(filterID) {
         $("#dropdown-sample-type").chosen().val(sampleType);
         $("#dropdown-sample-ty").trigger("chosen:updated");
         onLoadData();
+
+        $('#loading-overlay').delay(1000).fadeOut(500);
     });
 }
 
@@ -368,7 +370,7 @@ $(window).load(function() {
     $("#filter-container").slideDown(200);
     if (filterID != "") {
         loadFilter(filterID);
+    } else {
+        $('#loading-overlay').delay(1000).fadeOut(500);
     }
-
-    $('#loading-overlay').delay(1000).fadeOut(500);
 });
