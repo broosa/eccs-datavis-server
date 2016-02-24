@@ -3,10 +3,9 @@
 from flask import Flask
 import json
 import psycopg2
+import records
 
 app = Flask(__name__)
-
-db_conn = None
 base_config = {}
 
 
@@ -23,7 +22,10 @@ host = base_config["database"]["host"]
 db = base_config["database"]["db"]
 username = base_config["database"]["user"]
 password = base_config["database"]["password"]
-db_conn = psycopg2.connect(host=host, database=db,
-                           user=username, password=password)
+#db_conn = psycopg2.connect(host=host, database=db,
+#                           user=username, password=password)
+db_conn = records.Database("postgres://{}:{}@{}/{}".format(username, password,
+                            host, db))
+
 bind_port = base_config["system"]["bind_port"]
 app.config["SECRET_KEY"] = base_config["system"]["secret_key"]
