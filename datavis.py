@@ -63,7 +63,7 @@ def api_get_config():
     map_zoom = base_config["map_view"]["map_start_zoom"]
     map_attrib = base_config["map_view"]["map_attrib"]
 
-    return flask.jsonify(url=map_url, center=map_center, zoom=map_zoom, attrib=map_attrib)
+    return jsonify(url=map_url, center=map_center, zoom=map_zoom, attrib=map_attrib)
 
 @app.route('/api/trips/')
 def api_list_trips():
