@@ -1,8 +1,18 @@
-var dataMap;
+  var dataMap;
 var markers = [];
 var selected_marker = null;
 
 function mapInit() {
+
+    var mapConfig = {};
+
+    $.ajax({
+      async: false,
+      success: function(data) {
+        mapConfig = data;
+      }
+    });
+
 
     dataMap = L.map('map-viewport').setView([64.810, -18.245], 13);
 
@@ -344,7 +354,7 @@ function loadFilter(filterID) {
 
         enableDropdown($("#dropdown-sample-type"));
         $("#dropdown-sample-type").chosen().val(sampleType);
-        $("#dropdown-sample-ty").trigger("chosen:updated");
+        $("#dropdown-sample-type").trigger("chosen:updated");
         onLoadData();
 
         $('#loading-overlay').delay(1000).fadeOut(500);
