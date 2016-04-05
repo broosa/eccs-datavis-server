@@ -211,7 +211,7 @@ function onLoadData() {
         hashids = new Hashids();
         filterID = hashids.encode(tripIndex, dateIndex, placeIndex, sampleTypeIndex);
 
-        permalinkURL = ["/filter", filterID, ""].join("/")
+        permalinkURL = "/#" + filterID;
         $("#filter-link").attr("href", permalinkURL);
         console.log("Populating map!");
 
@@ -319,14 +319,25 @@ function onPlotHover(event, pos, item) {
 
 function loadFilter() {
 
-    if (filterID == "") {
+    //Are we coming from a permalink?
+    if (window.location.hash) {
+        var filterID = window.location.hash.substr(1);
+    } else {
         return;
     }
 
     deferred = $.Deferred();
 
     hashids = new Hashids();
-    filter_info = hashids.decode(filterID);
+    filterInfo = hashids.decode(filterID);
+
+    console.log("Loading filter id: " + filterID);
+
+    //If the hashid wasn't valid, continue loading
+    //without a filter
+    if (!filterInfo) {
+        return;
+    }
 
     var tripName = "";
     var date = "";
@@ -335,39 +346,39 @@ function loadFilter() {
 
     //Load the trips for the given filter
     $.get("api/trips/").done(function(data) {
-        tripName = data.trips[filter_info[0] - 1];
+        tripName = data.trips[filterInfo[0] - 1];
     }).then(function () {
 
         //Load the available dates
         return getFilterData(tripName, "dates").done(function(data) {
             populateDropdown($("#dropdown-date"), data.dates);
-            date = data.dates[filter_info[1] - 1];
+            date = data.dates[filterInfo[1] - 1];
         });
     }).then(function() {
 
         //Load Places
         return getFilterData(tripName, date, "places").done(function(data) {
             populateDropdown($("#dropdown-place"), data.places);
-            place = data.places[filter_info[2] - 1];
+            place = data.places[filterInfo[2] - 1];
         });
     }).then(function() {
         return getFilterData(tripName, date, place, "sample-types").done(function(data) {
             populateDropdown($("#dropdown-sample-type"), data.sampleTypes);
-            sampleType = data.sampleTypes[filter_info[3] - 1];
+            sampleType = data.sampleTypes[filterInfo[3] - 1];
         });
     }).then(function() {
         //TODO: find better way to load initial selections
         enableDropdown($("#dropdown-trip"));
-        setDropdownValue("#dropdown-trip", tripName);
+        setDropdownValue($("#dropdown-trip"), tripName);
 
         enableDropdown($("#dropdown-date"));
-        setDropdownValue("#dropdown-date", date);
+        setDropdownValue($("#dropdown-date"), date);
 
         enableDropdown($("#dropdown-place"));
-        setDropdownValue("#dropdown-place", place);
+        setDropdownValue($("#dropdown-place"), place);
 
         enableDropdown($("#dropdown-sample-type"));
-        setDropdownValue("#dropdown-sample-type", sampleType);
+        setDropdownValue($("#dropdown-sample-type"), sampleType);
 
         onLoadData();
     });
