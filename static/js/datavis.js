@@ -5,16 +5,25 @@ var selected_marker = null;
 function mapInit() {
 
     var mapConfig = {};
-    
-    dataMap = L.map('map-viewport').setView([64.810, -18.245], 13);
 
-    var baseLayer = new L.TileLayer(mapURL, {
-        attribution: mapAttribution,
-        maxZoom: 18,
-    })
+    var deferred = $.Deferred();
 
-    dataMap.invalidateSize(false);
-    dataMap.addLayer(baseLayer);
+    $.get("/api/map/config/").done(function(data) {
+
+        dataMap = L.map('map-viewport').setView(data.center, data.zoom);
+
+        var baseLayer = new L.TileLayer(data.url, {
+            attribution: data.attrib,
+            maxZoom: 18,
+        });
+
+        dataMap.invalidateSize(false);
+        dataMap.addLayer(baseLayer);
+
+        deferred.resolve();
+    });
+
+    return deferred;
 
 };
 
@@ -93,11 +102,28 @@ function getFilterData(args) {
 };
 
 function dropdownInit() {
+
     return getFilterData("trips").done(function(data) {
         console.log("Populating dropdowns...");
         populateDropdown($("#dropdown-trip"), data.trips);
     });
 };
+
+function eventInit() {
+    //Register dropdown event handlers
+    $("#dropdown-trip").chosen().change(onTripChanged);
+    $("#dropdown-date").chosen().change(onDateChanged);
+    $("#dropdown-place").chosen().change(onPlaceChanged);
+    $("#btn-show-filter-select").click(onStartFilterSelect);
+    $("#btn-load-data").click(onLoadData);
+    $("#timeplot-container").bind("plothover", onPlotHover);
+
+    console.log("Setting up comboboxes");
+    $(".chosen-select").chosen({
+        disable_search_threshold: 10
+    });
+
+}
 
 function onTripChanged() {
     console.log("Handling dropdown change event...");
@@ -164,6 +190,8 @@ function onPlaceChanged() {
 };
 
 function onLoadData() {
+
+    var deferred = $.Deferred();
     if ($("#dropdown-sample-type").val() != "") {
         tripName = $("#dropdown-trip").chosen().val();
         tripIndex = $("#dropdown-trip").prop("selectedIndex");
@@ -261,7 +289,11 @@ function onLoadData() {
             $("#timeplot-container").animate({
                 bottom: "30px"
             }, 200);
+
+            deferred.resolve()
         });
+
+        return deferred;
     }
 };
 
@@ -285,7 +317,14 @@ function onPlotHover(event, pos, item) {
     }
 };
 
-function loadFilter(filterID) {
+function loadFilter() {
+
+    if (filterID == "") {
+        return;
+    }
+
+    deferred = $.Deferred();
+
     hashids = new Hashids();
     filter_info = hashids.decode(filterID);
 
@@ -331,31 +370,12 @@ function loadFilter(filterID) {
         setDropdownValue("#dropdown-sample-type", sampleType);
 
         onLoadData();
-
-        $('#loading-overlay').delay(1000).fadeOut(500);
     });
 }
 
 $(window).load(function() {
-    mapInit();
-    console.log("Setting up comboboxes");
-    $(".chosen-select").chosen({
-        disable_search_threshold: 10
-    });
-
-    dropdownInit();
-    //Register dropdown event handlers
-    $("#dropdown-trip").chosen().change(onTripChanged);
-    $("#dropdown-date").chosen().change(onDateChanged);
-    $("#dropdown-place").chosen().change(onPlaceChanged);
-    $("#btn-show-filter-select").click(onStartFilterSelect);
-    $("#btn-load-data").click(onLoadData);
-    $("#timeplot-container").bind("plothover", onPlotHover);
-
-    $("#filter-container").slideDown(200);
-    if (filterID != "") {
-        loadFilter(filterID);
-    } else {
+    $.when(mapInit(), dropdownInit(), eventInit()).then(loadFilter()).done(function () {
+        $("#filter-container").slideDown(200);
         $('#loading-overlay').delay(1000).fadeOut(500);
-    }
+    });
 });
