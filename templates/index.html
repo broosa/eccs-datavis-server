@@ -18,10 +18,6 @@
         <script src="{{ url_for('static', filename='js/lib/hashids.min.js') }}"></script>
         <script type="text/javascript">
             var filterID = "{{ filter_id }}";
-            var mapURL = "{{ config['map_view']['map_url'] }}";
-            var mapAttribution = "{{ config['map_view']['map_attrib'] }}";
-            var mapCenter = {{ config['map_view']['map_start_center'] }};
-            var mapZoom = {{ config['map_view']['map_start_zoom'] }};
         </script>
         <title>Data Visualizer</title>
     </head>
