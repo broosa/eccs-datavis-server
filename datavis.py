@@ -31,20 +31,6 @@ def psql_query(query, args=None, include_columns=False):
     else:
         return cursor.fetchall()
 
-
-@app.route('/filter/<filter_id>/')
-def api_filter_link(filter_id):
-    hashids = Hashids()
-
-    # Check to make sure that the filter ID is valid
-    # If it isn't, we don't set any cookie data
-    filter_info = hashids.decode(filter_id)
-
-    if filter_info and len(filter_info) == 4:
-        session["filter_id"] = filter_id
-
-    return redirect('/')
-
 @app.route('/')
 def index():
 
@@ -63,7 +49,7 @@ def api_get_config():
     map_zoom = base_config["map_view"]["map_start_zoom"]
     map_attrib = base_config["map_view"]["map_attrib"]
 
-    return flask.jsonify(url=map_url, center=map_center, zoom=map_zoom, attrib=map_attrib)
+    return jsonify(url=map_url, center=map_center, zoom=map_zoom, attrib=map_attrib)
 
 @app.route('/api/trips/')
 def api_list_trips():

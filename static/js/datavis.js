@@ -1,18 +1,29 @@
-var dataMap;
+  var dataMap;
 var markers = [];
 var selected_marker = null;
 
 function mapInit() {
 
-    dataMap = L.map('map-viewport').setView([64.810, -18.245], 13);
+    var mapConfig = {};
 
-    var baseLayer = new L.TileLayer(mapURL, {
-        attribution: mapAttribution,
-        maxZoom: 18,
-    })
+    var deferred = $.Deferred();
 
-    dataMap.invalidateSize(false);
-    dataMap.addLayer(baseLayer);
+    $.get("/api/map/config/").done(function(data) {
+
+        dataMap = L.map('map-viewport').setView(data.center, data.zoom);
+
+        var baseLayer = new L.TileLayer(data.url, {
+            attribution: data.attrib,
+            maxZoom: 18,
+        });
+
+        dataMap.invalidateSize(false);
+        dataMap.addLayer(baseLayer);
+
+        deferred.resolve();
+    });
+
+    return deferred;
 
 };
 
@@ -58,6 +69,11 @@ function populateDropdown(element, data) {
     });
 };
 
+function setDropdownValue(element, value) {
+    element.chosen().val(value)
+    element.trigger("chosen:updated");
+};
+
 function onStartFilterSelect() {
     mapClearMarkers();
     resetCSVButton();
@@ -70,17 +86,44 @@ function onStartFilterSelect() {
     $("#timeplot-container").animate({
         bottom: "-250px"
     }, 200);
-}
+};
+
+function getFilterData(args) {
+    var urlTokens = ["api"];
+    for (var i = 0; i < arguments.length; i++) {
+        if (i == arguments.length - 1) {
+            arguments[i] += "/";
+        }
+        urlTokens.push(arguments[i]);
+    }
+
+    var ajaxUrl = urlTokens.join("/");
+    return $.get(ajaxUrl);
+};
 
 function dropdownInit() {
-    $.ajax({
-        url: "api/trips/",
-        success: function(data) {
-            console.log("Populating dropdowns...");
-            populateDropdown($("#dropdown-trip"), data.trips);
-        }
+
+    return getFilterData("trips").done(function(data) {
+        console.log("Populating dropdowns...");
+        populateDropdown($("#dropdown-trip"), data.trips);
     });
 };
+
+function eventInit() {
+    //Register dropdown event handlers
+    $("#dropdown-trip").chosen().change(onTripChanged);
+    $("#dropdown-date").chosen().change(onDateChanged);
+    $("#dropdown-place").chosen().change(onPlaceChanged);
+    $("#btn-show-filter-select").click(onStartFilterSelect);
+    $("#btn-load-data").click(onLoadData);
+    $("#timeplot-container").bind("plothover", onPlotHover);
+
+    console.log("Setting up comboboxes");
+    $(".chosen-select").chosen({
+        disable_search_threshold: 10
+    });
+
+}
 
 function onTripChanged() {
     console.log("Handling dropdown change event...");
@@ -88,24 +131,20 @@ function onTripChanged() {
     if (chosenElement.val() != "") {
 
         tripName = chosenElement.val();
-        ajaxURL = ["api", tripName, "dates/"].join("/");
 
-        $.ajax({
-            url: ajaxURL,
-            success: function(data) {
-                console.log("Populating date dropdown");
+        getFilterData(tripName, "dates").done(function(data) {
+            console.log("Populating date dropdown");
 
-                enableDropdown($("#dropdown-date"));
+            enableDropdown($("#dropdown-date"));
 
-                resetDropdown($("#dropdown-date"));
-                resetDropdown($("#dropdown-place"));
-                resetDropdown($("#dropdown-sample-type"));
+            resetDropdown($("#dropdown-date"));
+            resetDropdown($("#dropdown-place"));
+            resetDropdown($("#dropdown-sample-type"));
 
-                disableDropdown($("#dropdown-place"));
-                disableDropdown($("#dropdown-sample-type"));
+            disableDropdown($("#dropdown-place"));
+            disableDropdown($("#dropdown-sample-type"));
 
-                populateDropdown($("#dropdown-date"), data.dates);
-            }
+            populateDropdown($("#dropdown-date"), data.dates);
         });
     }
 };
@@ -117,21 +156,16 @@ function onDateChanged() {
 
         tripName = $("#dropdown-trip").chosen().val();
         date = chosenElement.val();
+        getFilterData(tripName, date, "places").done(function(data) {
+            console.log("Populating place dropdown");
 
-        ajaxURL = ["api", tripName, date, "places/"].join("/");
-        $.ajax({
-            url: ajaxURL,
-            success: function(data) {
-                console.log("Populating place dropdown");
+            enableDropdown($("#dropdown-place"));
 
-                enableDropdown($("#dropdown-place"));
+            resetDropdown($("#dropdown-place"));
+            resetDropdown($("#dropdown-sample-type"));
 
-                resetDropdown($("#dropdown-place"));
-                resetDropdown($("#dropdown-sample-type"));
-
-                disableDropdown($("#dropdown-sample-type"));
-                populateDropdown($("#dropdown-place"), data.places);
-            }
+            disableDropdown($("#dropdown-sample-type"));
+            populateDropdown($("#dropdown-place"), data.places);
         });
     }
 };
@@ -144,23 +178,20 @@ function onPlaceChanged() {
         date = $("#dropdown-date").chosen().val();
         place = chosenElement.val();
 
-        ajaxURL = ["api", tripName, date, place, "sample-types/"].join("/");
+        getFilterData(tripName, date, place, "sample-types").done(function(data) {
+            console.log("Populating place dropdown");
 
-        $.ajax({
-            url: ajaxURL,
-            success: function(data) {
-                console.log("Populating place dropdown");
+            enableDropdown($("#dropdown-sample-type"));
+            resetDropdown($("#dropdown-sample-type"));
 
-                enableDropdown($("#dropdown-sample-type"));
-                resetDropdown($("#dropdown-sample-type"));
-
-                populateDropdown($("#dropdown-sample-type"), data.sampleTypes);
-            }
+            populateDropdown($("#dropdown-sample-type"), data.sampleTypes);
         });
     }
 };
 
 function onLoadData() {
+
+    var deferred = $.Deferred();
     if ($("#dropdown-sample-type").val() != "") {
         tripName = $("#dropdown-trip").chosen().val();
         tripIndex = $("#dropdown-trip").prop("selectedIndex");
@@ -180,88 +211,89 @@ function onLoadData() {
         hashids = new Hashids();
         filterID = hashids.encode(tripIndex, dateIndex, placeIndex, sampleTypeIndex);
 
-        permalinkURL = ["/filter", filterID, ""].join("/")
+        permalinkURL = "/#" + filterID;
         $("#filter-link").attr("href", permalinkURL);
         console.log("Populating map!");
 
         mapClearMarkers();
-        $.ajax({
-            url: ajaxURL,
-            success: function(data) {
-                //Create a map marker from each latitude/longitude pair
-                $.each(data.data, function(index, value) {
-                    pointLoc = new L.LatLng(value[10], value[11]);
-                    var marker = new L.CircleMarker(pointLoc, {
-                        radius: 2,
-                        opacity: 1.0,
-                        fillOpacity: 1.0
-                    });
-                    markers.push(marker);
+        getFilterData(tripName, date, place, sampleType).done(function(data) {
+            //Create a map marker from each latitude/longitude pair
+            $.each(data.data, function(index, value) {
+                pointLoc = new L.LatLng(value[10], value[11]);
+                var marker = new L.CircleMarker(pointLoc, {
+                    radius: 2,
+                    opacity: 1.0,
+                    fillOpacity: 1.0
                 });
+                markers.push(marker);
+            });
 
-                markerGroup = L.featureGroup(markers);
+            markerGroup = L.featureGroup(markers);
 
-                markerBounds = markerGroup.getBounds().pad(0.5);
-                markerGroup.addTo(dataMap);
-                //Set the map so that it fits all the points we've just gotten
-                dataMap.fitBounds(markerBounds);
+            markerBounds = markerGroup.getBounds().pad(0.5);
+            markerGroup.addTo(dataMap);
+            //Set the map so that it fits all the points we've just gotten
+            dataMap.fitBounds(markerBounds);
 
-                $("#btn-csv-download").removeClass("disabled");
-                $("#btn-csv-download").attr("href", ajaxURL + "?fmt=csv");
-                $("#filter-container").slideUp(200, function() {
-                    $("#button-container").slideDown();
-                });
+            $("#btn-csv-download").removeClass("disabled");
+            $("#btn-csv-download").attr("href", ajaxURL + "?fmt=csv");
+            $("#filter-container").slideUp(200, function() {
+                $("#button-container").slideDown();
+            });
 
-                //Select the date and data value from the dataset
-                //That's what needed for the map.
-                data_series = $.map(data.data, function(value, i) {
-                    date = Date.parse(value[2]);
-                    data_value = value[6];
-                    return [
-                        [date, data_value, {
-                            point_index: i
-                        }]
-                    ];
-                });
+            //Select the date and data value from the dataset
+            //That's what needed for the map.
+            data_series = $.map(data.data, function(value, i) {
+                date = Date.parse(value[2]);
+                data_value = value[6];
+                return [
+                    [date, data_value, {
+                        point_index: i
+                    }]
+                ];
+            });
 
-                datasets = [{
-                    label: sampleType,
-                    data: data_series,
-                    color: "#0000BB",
-                    lines: {
-                        show: true
-                    },
-                    points: {
-                        fillColor: "#FF0000",
-                        //We need the points for plothover to work
-                        //we set the radius to 0 so they don't actually
-                        //appear on screen.
-                        show: true,
-                        radius: 0
-                    }
-                }];
-
-                options = {
-                    canvas: true,
-                    xaxes: [{
-                        mode: "time"
-                    }],
-                    grid: {
-                        margin: 20,
-                        clickable: true,
-                        hoverable: true,
-                        mouseActiveRadius: 200
-                    }
+            datasets = [{
+                label: sampleType,
+                data: data_series,
+                color: "#0000BB",
+                lines: {
+                    show: true
+                },
+                points: {
+                    fillColor: "#FF0000",
+                    //We need the points for plothover to work
+                    //we set the radius to 0 so they don't actually
+                    //appear on screen.
+                    show: true,
+                    radius: 0
                 }
+            }];
 
-                //console.log(data_series);
-
-                $.plot($("#timeplot-container"), datasets, options);
-                $("#timeplot-container").animate({
-                    bottom: "30px"
-                }, 200);
+            options = {
+                canvas: true,
+                xaxes: [{
+                    mode: "time"
+                }],
+                grid: {
+                    margin: 20,
+                    clickable: true,
+                    hoverable: true,
+                    mouseActiveRadius: 200
+                }
             }
+
+            //console.log(data_series);
+
+            $.plot($("#timeplot-container"), datasets, options);
+            $("#timeplot-container").animate({
+                bottom: "30px"
+            }, 200);
+
+            deferred.resolve()
         });
+
+        return deferred;
     }
 };
 
@@ -285,9 +317,27 @@ function onPlotHover(event, pos, item) {
     }
 };
 
-function loadFilter(filterID) {
+function loadFilter() {
+
+    //Are we coming from a permalink?
+    if (window.location.hash) {
+        var filterID = window.location.hash.substr(1);
+    } else {
+        return;
+    }
+
+    var deferred = $.Deferred();
+
     hashids = new Hashids();
-    filter_info = hashids.decode(filterID);
+    filterInfo = hashids.decode(filterID);
+
+    console.log("Loading filter id: " + filterID);
+
+    //If the hashid wasn't valid, continue loading
+    //without a filter
+    if (!filterInfo) {
+        return;
+    }
 
     var tripName = "";
     var date = "";
@@ -295,82 +345,52 @@ function loadFilter(filterID) {
     var sampleType = "";
 
     //Load the trips for the given filter
-    $.ajax({
-        url: "api/trips/",
-        success: function(data) {
-            tripName = data.trips[filter_info[0] - 1];
-        }
+    $.get("api/trips/").done(function(data) {
+        tripName = data.trips[filterInfo[0] - 1];
     }).then(function () {
 
         //Load the available dates
-        return $.ajax({
-            url: ["api", tripName, "dates/"].join("/"),
-            success: function(data) {
-                populateDropdown($("#dropdown-date"), data.dates);
-                date = data.dates[filter_info[1] - 1];
-            }
+        return getFilterData(tripName, "dates").done(function(data) {
+            populateDropdown($("#dropdown-date"), data.dates);
+            date = data.dates[filterInfo[1] - 1];
         });
     }).then(function() {
 
         //Load Places
-        return $.ajax({
-            url: ["api", tripName, date, "places/"].join("/"),
-            success: function(data) {
-                populateDropdown($("#dropdown-place"), data.places);
-                place = data.places[filter_info[2] - 1];
-            }
+        return getFilterData(tripName, date, "places").done(function(data) {
+            populateDropdown($("#dropdown-place"), data.places);
+            place = data.places[filterInfo[2] - 1];
         });
     }).then(function() {
-        return $.ajax({
-            url: ["api", tripName, date, place, "sample-types/"].join("/"),
-            success: function(data) {
-                populateDropdown($("#dropdown-sample-type"), data.sampleTypes);
-                sampleType = data.sampleTypes[filter_info[3] - 1];
-            }
+        return getFilterData(tripName, date, place, "sample-types").done(function(data) {
+            populateDropdown($("#dropdown-sample-type"), data.sampleTypes);
+            sampleType = data.sampleTypes[filterInfo[3] - 1];
         });
     }).then(function() {
         //TODO: find better way to load initial selections
         enableDropdown($("#dropdown-trip"));
-        $("#dropdown-trip").chosen().val(tripName);
-        $("#dropdown-trip").trigger("chosen:updated");
+        setDropdownValue($("#dropdown-trip"), tripName);
 
         enableDropdown($("#dropdown-date"));
-        $("#dropdown-date").chosen().val(date);
-        $("#dropdown-date").trigger("chosen:updated");
+        setDropdownValue($("#dropdown-date"), date);
 
         enableDropdown($("#dropdown-place"));
-        $("#dropdown-place").chosen().val(place);
-        $("#dropdown-place").trigger("chosen:updated");
+        setDropdownValue($("#dropdown-place"), place);
 
         enableDropdown($("#dropdown-sample-type"));
-        $("#dropdown-sample-type").chosen().val(sampleType);
-        $("#dropdown-sample-ty").trigger("chosen:updated");
+        setDropdownValue($("#dropdown-sample-type"), sampleType);
+
         onLoadData();
 
-        $('#loading-overlay').delay(1000).fadeOut(500);
+        deferred.resolve();
     });
+
+    return deferred;
 }
 
 $(window).load(function() {
-    mapInit();
-    console.log("Setting up comboboxes");
-    $(".chosen-select").chosen({
-        disable_search_threshold: 10
-    });
-
-    dropdownInit();
-    //Register dropdown event handlers
-    $("#dropdown-trip").chosen().change(onTripChanged);
-    $("#dropdown-date").chosen().change(onDateChanged);
-    $("#dropdown-place").chosen().change(onPlaceChanged);
-    $("#btn-show-filter-select").click(onStartFilterSelect);
-    $("#btn-load-data").click(onLoadData);
-    $("#timeplot-container").bind("plothover", onPlotHover);
-
-    $("#filter-container").slideDown(200);
-    if (filterID != "") {
-        loadFilter(filterID);
-    } else {
+    $.when(mapInit(), dropdownInit(), eventInit()).then(loadFilter()).done(function () {
+        $("#filter-container").slideDown(200);
         $('#loading-overlay').delay(1000).fadeOut(500);
-    }
+    });
 });

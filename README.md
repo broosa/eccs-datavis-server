@@ -35,3 +35,5 @@ something like this:
 - flask
 - psycopg2
 - hashids
+
+For a more detailed list of required packages, click [here](requirements.txt).
