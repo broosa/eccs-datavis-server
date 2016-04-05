@@ -326,7 +326,7 @@ function loadFilter() {
         return;
     }
 
-    deferred = $.Deferred();
+    var deferred = $.Deferred();
 
     hashids = new Hashids();
     filterInfo = hashids.decode(filterID);
@@ -381,7 +381,11 @@ function loadFilter() {
         setDropdownValue($("#dropdown-sample-type"), sampleType);
 
         onLoadData();
+
+        deferred.resolve();
     });
+
+    return deferred;
 }
 
 $(window).load(function() {
